@@ -1,0 +1,34 @@
+appId: com.gtafivem.modmanager
+productName: GTA FiveM Mod Manager
+
+directories:
+  output: dist
+  buildResources: build
+
+# نحزم فقط الكود المبني. مجلد mods (1GB+) لا يُحزم إطلاقاً —
+# المودات تُوزّع لاحقاً عبر GitHub Releases وتُنزّل عند الطلب (المرحلة 2).
+files:
+  - out/**/*
+  - package.json
+
+asar: true
+
+win:
+  target:
+    - nsis
+
+nsis:
+  # تثبيت لكل مستخدم في مجلده الشخصي — لا يحتاج صلاحيات مدير،
+  # ويجعل مجلد البرنامج قابلاً للكتابة (مهم لعمل المودات والتحديث).
+  perMachine: false
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: GTA FiveM Mod Manager
+
+# مكان نشر النسخ والتحديثات. غيّر owner إلى اسم حسابك في GitHub.
+publish:
+  provider: github
+  owner: i-Flan
+  repo: gta-fivem-mod-manager

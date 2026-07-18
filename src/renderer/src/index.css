@@ -1,0 +1,22 @@
+:root {
+  --bg-primary: #080c14;
+  --bg-secondary: #101827;
+  --bg-card: #121c2c;
+  --bg-card-hover: #17243a;
+  --accent: #4f8cff;
+  --accent-glow: rgba(79, 140, 255, .28);
+  --accent-green: #22c58b;
+  --accent-red: #ff6275;
+  --text-primary: #eef4ff;
+  --text-secondary: #a8b5c9;
+  --text-muted: #71819a;
+  --border: #233149;
+  --radius: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root { width: 100%; height: 100%; }
+body { font-family: Tahoma, Arial, sans-serif; background: var(--bg-primary); color: var(--text-primary); overflow: hidden; }
+button, input { font: inherit; }
+button { -webkit-app-region: no-drag; }
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background: #2d405e; border-radius: 20px; }

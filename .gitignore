@@ -1,0 +1,13 @@
+node_modules/
+out/
+dist/
+*.log
+
+# مجلد المودات ضخم (1GB+) — لا يُرفع على GitHub إطلاقاً.
+# يبقى محلياً على جهازك، ويُوزّع لاحقاً عبر Releases (المرحلة 2).
+mods/
+
+# ملفات الأسرار (توكن Discord) — لا تُرفع أبداً
+.env
+.env.local
+token.txt
