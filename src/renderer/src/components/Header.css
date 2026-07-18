@@ -2,9 +2,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
+  padding: 16px 26px;
   border-bottom: 1px solid var(--border);
-  background: rgba(17, 24, 39, 0.8);
+  background: linear-gradient(180deg, rgba(20, 20, 24, 0.92), rgba(11, 11, 13, 0.82));
   backdrop-filter: blur(12px);
   -webkit-app-region: drag;
 }
@@ -20,56 +20,67 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-direction: row-reverse;
 }
 
 .logo-icon {
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-purple));
-  border-radius: 10px;
+  width: 42px;
+  height: 42px;
+  background: linear-gradient(135deg, #e01e2b, #8f0f18);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 22px;
+  font-weight: 900;
+  font-style: italic;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  box-shadow: 0 6px 18px rgba(224, 30, 43, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.logo > div:last-child {
+  text-align: right;
 }
 
 .logo h1 {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 19px;
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  direction: ltr;
 }
 
 .logo span {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
   display: block;
-}
-
-.path-status {
-  display: flex;
-  gap: 8px;
+  direction: ltr;
+  letter-spacing: 0.05em;
 }
 
 .path-badge {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
+  padding: 5px 11px;
   border-radius: 20px;
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   border: 1px solid var(--border);
 }
 
 .path-badge.valid {
-  border-color: rgba(16, 185, 129, 0.3);
+  border-color: rgba(52, 201, 138, 0.35);
   color: var(--accent-green);
-  background: rgba(16, 185, 129, 0.08);
+  background: rgba(52, 201, 138, 0.08);
 }
 
 .path-badge.invalid {
-  border-color: rgba(239, 68, 68, 0.3);
+  border-color: rgba(224, 30, 43, 0.35);
   color: var(--accent-red);
-  background: rgba(239, 68, 68, 0.08);
+  background: rgba(224, 30, 43, 0.08);
 }
 
 .path-dot {
@@ -81,8 +92,8 @@
 
 .settings-btn,
 .action-btn {
-  height: 36px;
-  border-radius: 8px;
+  height: 38px;
+  border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--bg-card);
   color: var(--text-secondary);
@@ -90,7 +101,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 15px;
   font-family: inherit;
   transition: all 0.2s;
   -webkit-app-region: no-drag;
@@ -102,7 +113,7 @@
 }
 
 .settings-btn {
-  width: 36px;
+  width: 38px;
   font-size: 18px;
 }
 
@@ -111,6 +122,7 @@
   background: var(--bg-card-hover);
   color: var(--text-primary);
   border-color: var(--accent);
+  box-shadow: 0 0 14px var(--accent-glow);
 }
 
 .action-btn:disabled {

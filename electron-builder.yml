@@ -1,5 +1,5 @@
 appId: com.gtafivem.modmanager
-productName: GTA FiveM Mod Manager
+productName: Fivey
 
 directories:
   output: dist
@@ -16,6 +16,8 @@ asar: true
 win:
   target:
     - nsis
+  # شعار Fivey (1024×1024). electron-builder يولّد أيقونة ويندوز منه.
+  icon: build/icon.png
 
 nsis:
   # تثبيت لكل مستخدم في مجلده الشخصي — لا يحتاج صلاحيات مدير،
@@ -25,7 +27,7 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
-  shortcutName: GTA FiveM Mod Manager
+  shortcutName: Fivey
 
 # مكان نشر النسخ والتحديثات. غيّر owner إلى اسم حسابك في GitHub.
 publish:

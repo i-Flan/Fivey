@@ -1,17 +1,21 @@
 :root {
-  --bg-primary: #080c14;
-  --bg-secondary: #101827;
-  --bg-card: #121c2c;
-  --bg-card-hover: #17243a;
-  --accent: #4f8cff;
-  --accent-glow: rgba(79, 140, 255, .28);
-  --accent-green: #22c58b;
-  --accent-red: #ff6275;
-  --text-primary: #eef4ff;
-  --text-secondary: #a8b5c9;
-  --text-muted: #71819a;
-  --border: #233149;
-  --radius: 14px;
+  /* Fivey — رصاصي + أحمر + أسود */
+  --bg-primary: #0b0b0d;
+  --bg-secondary: #131317;
+  --bg-card: #17171c;
+  --bg-card-hover: #1f1f26;
+  --steel: #2b2d34;
+  --steel-light: #3c3f48;
+  --accent: #e01e2b;
+  --accent-hover: #f5313f;
+  --accent-glow: rgba(224, 30, 43, 0.30);
+  --accent-green: #34c98a;
+  --accent-red: #ff5a68;
+  --text-primary: #f3f4f6;
+  --text-secondary: #a6abb4;
+  --text-muted: #6d727c;
+  --border: #26272e;
+  --radius: 13px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body, #root { width: 100%; height: 100%; }
@@ -19,4 +23,5 @@ body { font-family: Tahoma, Arial, sans-serif; background: var(--bg-primary); co
 button, input { font: inherit; }
 button { -webkit-app-region: no-drag; }
 ::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-thumb { background: #2d405e; border-radius: 20px; }
+::-webkit-scrollbar-thumb { background: #33353d; border-radius: 20px; }
+::-webkit-scrollbar-thumb:hover { background: #43454f; }

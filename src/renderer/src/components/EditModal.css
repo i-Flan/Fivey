@@ -131,10 +131,11 @@
 }
 
 .btn-save {
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent), #a8121c);
   color: white;
 }
 
 .btn-save:hover {
-  background: #3777eb;
+  filter: brightness(1.1);
+  box-shadow: 0 4px 18px var(--accent-glow);
 }

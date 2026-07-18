@@ -39,7 +39,7 @@ function createWindow(): void {
     minHeight: 600,
     show: false,
     autoHideMenuBar: true,
-    title: 'GTA / FiveM Mod Manager',
+    title: 'Dev by Tik @le_o',
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
