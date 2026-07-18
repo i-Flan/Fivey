@@ -1,7 +1,6 @@
-.app { position: relative; height: 100vh; display: flex; flex-direction: column; background: radial-gradient(circle at 100% 0, rgba(224, 30, 43, 0.14) 0, transparent 36%), radial-gradient(circle at 0 100%, rgba(60, 63, 72, 0.2) 0, transparent 42%), var(--bg-primary); }
-/* علامة Fivey خفيفة في الخلفية */
-.app::before { content: ''; position: fixed; bottom: -70px; inset-inline-end: -50px; width: 400px; height: 400px; background: url('./assets/logo-mark.png') no-repeat center / contain; opacity: 0.04; filter: grayscale(0.2); pointer-events: none; z-index: 0; }
-.app > * { position: relative; z-index: 1; }
+.app { height: 100vh; display: flex; flex-direction: column; }
+/* علامة Fivey خفيفة في الخلفية (خلف المحتوى، لا تؤثر على النوافذ) */
+.app::before { content: ''; position: fixed; bottom: -60px; inset-inline-end: -40px; width: 480px; height: 300px; background: url('./assets/logo-mark.png') no-repeat center / contain; opacity: 0.06; pointer-events: none; z-index: -1; }
 .main-content { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .category-switcher { display: flex; gap: 8px; padding: 16px 32px 0; justify-content: space-between; align-items: center; }
 .categories-left { display: flex; gap: 8px; }
