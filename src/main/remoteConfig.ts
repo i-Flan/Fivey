@@ -3,7 +3,7 @@
 // (مُعلَّم كـ pre-release حتى لا يخلط مع تحديثات البرنامج).
 
 export const CONTENT_OWNER = 'i-Flan'
-export const CONTENT_REPO = 'gta-fivem-mod-manager'
+export const CONTENT_REPO = 'Fivey'
 export const CONTENT_TAG = 'content'
 
 // رابط ملف القائمة الذي يقرأه البرنامج ليعرف المودات المتاحة.

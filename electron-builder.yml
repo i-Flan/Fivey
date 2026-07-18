@@ -33,7 +33,7 @@ nsis:
 publish:
   provider: github
   owner: i-Flan
-  repo: gta-fivem-mod-manager
+  repo: Fivey
   # ينشر ملف التثبيت مباشرة في الإصدار المنشور (بدل المسودة) —
   # يحل مشكلة "existing type not compatible".
   releaseType: release

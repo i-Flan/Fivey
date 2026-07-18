@@ -5,7 +5,7 @@
 $ErrorActionPreference = 'Stop'
 
 $Owner = 'i-Flan'
-$Repo  = 'gta-fivem-mod-manager'
+$Repo  = 'Fivey'
 $Tag   = 'content'
 
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
