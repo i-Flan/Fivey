@@ -41,6 +41,12 @@ export async function buildModCatalog(): Promise<ModManifest[]> {
   const local = scanAllMods(modsDir)
   const remote = await fetchRemoteCatalog()
 
+  // أوفلاين (فشل الجلب): اعرض المودات المحمّلة محلياً فقط حتى يبقى البرنامج قابلاً للاستخدام
+  if (remote === null) {
+    return local.map((m) => ({ ...m, folderName: getModFolderName(m), downloaded: true }))
+  }
+
+  // القائمة المركزية هي المصدر الرسمي: أي مود يُحذف منها يختفي عند الجميع
   const byId = new Map<string, ModManifest>()
 
   for (const r of remote) {
@@ -77,13 +83,6 @@ export async function buildModCatalog(): Promise<ModManifest[]> {
         size: r.size,
         downloaded: false
       })
-    }
-  }
-
-  // مودات محمّلة محلياً غير موجودة في القائمة المركزية (مثلاً عند المدير)
-  for (const m of local) {
-    if (!byId.has(m.id)) {
-      byId.set(m.id, { ...m, folderName: getModFolderName(m), downloaded: true })
     }
   }
 
