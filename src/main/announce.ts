@@ -6,6 +6,9 @@ import type { ModCategory } from '../shared/types'
 // صورة افتراضية تُستخدم لو المود ما له صورة غلاف (ملف محلي على جهاز المدير)
 const FALLBACK_IMAGE = 'C:\\Users\\yazee\\Downloads\\ChatGPT Image Jul 19, 2026, 12_46_24 AM (1).png'
 
+// رابط تحميل البرنامج (يظهر كزر / رابط في الإعلان)
+const RELEASES_URL = 'https://github.com/i-Flan/Fivey/releases/'
+
 // أسماء التصنيفات كما تظهر في الإعلان
 const CAT_LABEL: Record<ModCategory, string> = {
   graphics: 'Graphics',
@@ -125,13 +128,21 @@ export async function announceMod(mod: PublishMod): Promise<{ success: boolean; 
   let fileIndex = 0
 
   const desc = (mod.descriptionAr || '').trim()
+  // وصف أنيق: شارة الحصرية + الوصف + رابط تحميل قابل للضغط (يعمل دائماً)
+  const descParts: string[] = ['🔥 **حصري في تطبيق Fivey**']
+  if (desc) descParts.push(desc)
+  descParts.push(`**[⬇️  حمّل الآن من البرنامج](${RELEASES_URL})**`)
+
   const embed: Record<string, unknown> = {
     author: { name: `Fivey  •  ${CAT_LABEL[mod.category]}`, icon_url: 'attachment://fivey.png' },
     title: `${CAT_EMOJI[mod.category]}  ${mod.nameAr}`,
-    description: desc
-      ? `${desc}\n\n​`
-      : '‏وصل مود جديد إلى Fivey — افتح البرنامج وحمّله. 🚀\n\n​',
+    url: RELEASES_URL, // يخلي العنوان نفسه رابطاً قابلاً للضغط
+    description: descParts.join('\n\n'),
     color: 0xe01e2b,
+    fields: [
+      { name: '📂 التصنيف', value: CAT_LABEL[mod.category], inline: true },
+      { name: '✨ الحصرية', value: 'حصري في Fivey', inline: true }
+    ],
     footer: { text: 'Fivey Mod Manager', icon_url: 'attachment://fivey.png' },
     timestamp: new Date().toISOString()
   }
@@ -162,10 +173,25 @@ export async function announceMod(mod: PublishMod): Promise<{ success: boolean; 
     fileIndex++
   }
 
-  form.append('payload_json', JSON.stringify({ username: 'Fivey', embeds: [embed] }))
+  // زر رابط حقيقي (لو الروم يدعمه). لو رفضه ديسكورد نعيد الإرسال بدون أزرار.
+  const linkButton = {
+    type: 1,
+    components: [{ type: 2, style: 5, label: '⬇️ حمّل من البرنامج', url: RELEASES_URL }]
+  }
+
+  const send = async (withButton: boolean): Promise<Response> => {
+    const body = new FormData()
+    for (const [k, v] of form.entries()) body.append(k, v as string | Blob)
+    body.append(
+      'payload_json',
+      JSON.stringify({ username: 'Fivey', embeds: [embed], components: withButton ? [linkButton] : [] })
+    )
+    return fetch(url, { method: 'POST', body })
+  }
 
   try {
-    const res = await fetch(url, { method: 'POST', body: form })
+    let res = await send(true)
+    if (!res.ok) res = await send(false) // fallback: بدون زر (الرابط في الوصف يكفي)
     if (!res.ok) return { success: false, error: `ديسكورد رفض الطلب (${res.status})` }
     return { success: true }
   } catch (err) {
