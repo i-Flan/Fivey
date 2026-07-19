@@ -128,10 +128,10 @@ export async function announceMod(mod: PublishMod): Promise<{ success: boolean; 
   let fileIndex = 0
 
   const desc = (mod.descriptionAr || '').trim()
-  // وصف أنيق: شارة الحصرية + الوصف + رابط تحميل قابل للضغط (يعمل دائماً)
-  const descParts: string[] = ['🔥 **حصري في تطبيق Fivey**']
+  // وصف أنيق (نصوص ثابتة إنجليزية): شارة الحصرية + الوصف + رابط تحميل قابل للضغط
+  const descParts: string[] = ['🔥 **Exclusive on Fivey**']
   if (desc) descParts.push(desc)
-  descParts.push(`**[⬇️  حمّل الآن من البرنامج](${RELEASES_URL})**`)
+  descParts.push(`**[⬇️  Download Now](${RELEASES_URL})**`)
 
   const embed: Record<string, unknown> = {
     author: { name: `Fivey  •  ${CAT_LABEL[mod.category]}`, icon_url: 'attachment://fivey.png' },
@@ -139,10 +139,7 @@ export async function announceMod(mod: PublishMod): Promise<{ success: boolean; 
     url: RELEASES_URL, // يخلي العنوان نفسه رابطاً قابلاً للضغط
     description: descParts.join('\n\n'),
     color: 0xe01e2b,
-    fields: [
-      { name: '📂 التصنيف', value: CAT_LABEL[mod.category], inline: true },
-      { name: '✨ الحصرية', value: 'حصري في Fivey', inline: true }
-    ],
+    fields: [{ name: '📂 Category', value: CAT_LABEL[mod.category], inline: true }],
     footer: { text: 'Fivey Mod Manager', icon_url: 'attachment://fivey.png' },
     timestamp: new Date().toISOString()
   }
@@ -176,7 +173,7 @@ export async function announceMod(mod: PublishMod): Promise<{ success: boolean; 
   // زر رابط حقيقي (لو الروم يدعمه). لو رفضه ديسكورد نعيد الإرسال بدون أزرار.
   const linkButton = {
     type: 1,
-    components: [{ type: 2, style: 5, label: '⬇️ حمّل من البرنامج', url: RELEASES_URL }]
+    components: [{ type: 2, style: 5, label: '⬇️ Download from App', url: RELEASES_URL }]
   }
 
   const send = async (withButton: boolean): Promise<Response> => {
