@@ -76,7 +76,7 @@ export const translations: Record<Lang, Record<string, string>> = {
 
     cat_graphics_title: 'Graphics',
     cat_graphics_desc: 'Pick one graphics pack to enable.',
-    cat_audio_title: 'Weapon Sounds',
+    cat_audio_title: 'Sound',
     cat_audio_desc: 'Pick one sound pack to enable.',
     cat_bloodfx_title: 'BloodFX',
     cat_bloodfx_desc: 'Each pack has a DAT and an RPF file.',

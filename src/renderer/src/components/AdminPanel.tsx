@@ -4,7 +4,7 @@ import './AdminPanel.css'
 
 const CATS: { key: ModCategory; name: string }[] = [
   { key: 'graphics', name: 'Graphics' },
-  { key: 'audio', name: 'Weapon Sounds' },
+  { key: 'audio', name: 'Sound' },
   { key: 'bloodfx', name: 'BloodFX' },
   { key: 'killfx', name: 'KillFX' }
 ]

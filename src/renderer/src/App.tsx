@@ -11,7 +11,7 @@ import './App.css'
 // أسماء التصنيفات دائماً بالإنجليزي (موحّدة)، وباقي الكلام يتبع اللغة المختارة
 const CATS: { key: ModCategory; icon: string; name: string; label: string }[] = [
   { key: 'graphics', icon: '🎨', name: 'Graphics', label: 'FiveM Graphics' },
-  { key: 'audio', icon: '🔊', name: 'Weapon Sounds', label: 'GTA V Weapon Sounds' },
+  { key: 'audio', icon: '🔊', name: 'Sound', label: 'GTA V Sound' },
   { key: 'bloodfx', icon: '🩸', name: 'BloodFX', label: 'Blood Effects' },
   { key: 'killfx', icon: '💥', name: 'KillFX', label: 'Kill Effects' }
 ]
