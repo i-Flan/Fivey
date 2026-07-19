@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'fs'
-import { join, extname, dirname } from 'path'
-import { app } from 'electron'
+import { join, dirname } from 'path'
+import { app, nativeImage } from 'electron'
 import type { ModCategory } from '../shared/types'
 
 // صورة افتراضية تُستخدم لو المود ما له صورة غلاف (ملف محلي على جهاز المدير)
@@ -12,6 +12,14 @@ const CAT_LABEL: Record<ModCategory, string> = {
   audio: 'Sound',
   bloodfx: 'BloodFX',
   killfx: 'KillFX'
+}
+
+// إيموجي لكل تصنيف لإضفاء لمسة أنيقة على العنوان
+const CAT_EMOJI: Record<ModCategory, string> = {
+  graphics: '🎨',
+  audio: '🔊',
+  bloodfx: '🩸',
+  killfx: '💥'
 }
 
 export interface PublishMod {
@@ -50,19 +58,59 @@ function loadWebhooks(): { hooks: Partial<Record<ModCategory, string>>; found: b
   return { hooks: {}, found: false }
 }
 
-// مسار أيقونة Fivey (maintains المصدر في التطوير، والمورد الخارجي في النسخة المثبّتة)
+// مسار أيقونة Fivey (المصدر في التطوير، والمورد الخارجي في النسخة المثبّتة)
 function iconPath(): string {
   return app.isPackaged
     ? join(process.resourcesPath, 'icon.png')
     : join(app.getAppPath(), 'build', 'icon.png')
 }
 
-function appendFile(form: FormData, index: number, filePath: string, fileName: string, mime: string): void {
-  const buf = readFileSync(filePath)
-  form.append(`files[${index}]`, new Blob([buf], { type: mime }), fileName)
+// يجيب بيانات صورة المود: من رابط الإنترنت أو من ملف محلي أو الصورة الافتراضية
+async function getSourceImage(preview?: string): Promise<Buffer | null> {
+  try {
+    if (preview && /^https?:\/\//i.test(preview)) {
+      const res = await fetch(preview)
+      if (res.ok) return Buffer.from(await res.arrayBuffer())
+    }
+  } catch {
+    // نكمّل للملف المحلي
+  }
+  try {
+    const local = preview && existsSync(preview) ? preview : existsSync(FALLBACK_IMAGE) ? FALLBACK_IMAGE : ''
+    if (local) return readFileSync(local)
+  } catch {
+    // ignore
+  }
+  return null
 }
 
-// يرسل إعلاناً (Embed) عن المود إلى روم التصنيف عبر Webhook
+// يحوّل أي صورة إلى بانر عريض أنيق (نسبة 16:9) عشان ما تطلع ضخمة في ديسكورد
+function makeBanner(buf: Buffer): Buffer {
+  try {
+    let img = nativeImage.createFromBuffer(buf)
+    const { width, height } = img.getSize()
+    if (!width || !height) return buf
+
+    const ratio = 16 / 9
+    let cropW = width
+    let cropH = Math.round(width / ratio)
+    if (cropH > height) {
+      cropH = height
+      cropW = Math.round(height * ratio)
+    }
+    const x = Math.max(0, Math.round((width - cropW) / 2))
+    const y = Math.max(0, Math.round((height - cropH) / 2))
+    img = img.crop({ x, y, width: cropW, height: cropH })
+
+    if (cropW > 1280) img = img.resize({ width: 1280, quality: 'best' })
+    const png = img.toPNG()
+    return png.length ? png : buf
+  } catch {
+    return buf
+  }
+}
+
+// يرسل إعلاناً (Embed) أنيقاً عن المود إلى روم التصنيف عبر Webhook
 export async function announceMod(mod: PublishMod): Promise<{ success: boolean; error?: string }> {
   const { hooks, found } = loadWebhooks()
   if (!found) {
@@ -76,43 +124,42 @@ export async function announceMod(mod: PublishMod): Promise<{ success: boolean; 
   const form = new FormData()
   let fileIndex = 0
 
+  const desc = (mod.descriptionAr || '').trim()
   const embed: Record<string, unknown> = {
-    title: mod.nameAr,
-    description: mod.descriptionAr || undefined,
+    author: { name: `Fivey  •  ${CAT_LABEL[mod.category]}`, icon_url: 'attachment://fivey.png' },
+    title: `${CAT_EMOJI[mod.category]}  ${mod.nameAr}`,
+    description: desc
+      ? `${desc}\n\n​`
+      : '‏وصل مود جديد إلى Fivey — افتح البرنامج وحمّله. 🚀\n\n​',
     color: 0xe01e2b,
-    footer: { text: `Fivey • ${CAT_LABEL[mod.category]}` }
+    footer: { text: 'Fivey Mod Manager', icon_url: 'attachment://fivey.png' },
+    timestamp: new Date().toISOString()
   }
 
-  // أيقونة Fivey في الزاوية (thumbnail) — تُرفق كملف
+  // أيقونة Fivey (تُستخدم في author + footer) — تُرفق مرة واحدة
+  let hasIcon = false
   try {
     const ic = iconPath()
     if (existsSync(ic)) {
-      appendFile(form, fileIndex, ic, 'fivey.png', 'image/png')
-      embed.thumbnail = { url: 'attachment://fivey.png' }
+      form.append(`files[${fileIndex}]`, new Blob([readFileSync(ic)], { type: 'image/png' }), 'fivey.png')
       fileIndex++
+      hasIcon = true
     }
   } catch {
-    // لو ما قدرنا نرفق الأيقونة نكمّل بدونها
+    // نكمّل بدون أيقونة
+  }
+  if (!hasIcon) {
+    ;(embed.author as { icon_url?: string }).icon_url = undefined
+    ;(embed.footer as { icon_url?: string }).icon_url = undefined
   }
 
-  // صورة خلفية المود (image): رابط مباشر، أو ملف محلي، أو الصورة الافتراضية
-  try {
-    const preview = mod.preview
-    if (preview && /^https?:\/\//i.test(preview)) {
-      embed.image = { url: preview }
-    } else {
-      const local = preview && existsSync(preview) ? preview : existsSync(FALLBACK_IMAGE) ? FALLBACK_IMAGE : ''
-      if (local) {
-        const ext = extname(local).toLowerCase()
-        const isJpg = ext === '.jpg' || ext === '.jpeg'
-        const fname = isJpg ? 'preview.jpg' : 'preview.png'
-        appendFile(form, fileIndex, local, fname, isJpg ? 'image/jpeg' : 'image/png')
-        embed.image = { url: `attachment://${fname}` }
-        fileIndex++
-      }
-    }
-  } catch {
-    // نكمّل بدون صورة كبيرة لو تعذّر رفعها
+  // صورة المود ← بانر عريض أنيق (image كبير لكن بنسبة مرتّبة)
+  const src = await getSourceImage(mod.preview)
+  if (src) {
+    const banner = makeBanner(src)
+    form.append(`files[${fileIndex}]`, new Blob([banner], { type: 'image/png' }), 'banner.png')
+    embed.image = { url: 'attachment://banner.png' }
+    fileIndex++
   }
 
   form.append('payload_json', JSON.stringify({ username: 'Fivey', embeds: [embed] }))
