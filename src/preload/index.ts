@@ -25,6 +25,7 @@ const api = {
   adminAddMod: (input: unknown) => ipcRenderer.invoke('admin-add-mod', input),
   adminEditMod: (id: string, fields: unknown) => ipcRenderer.invoke('admin-edit-mod', id, fields),
   adminDeleteMod: (id: string) => ipcRenderer.invoke('admin-delete-mod', id),
+  adminPublishMod: (mod: unknown) => ipcRenderer.invoke('admin-publish-mod', mod),
   // التحديث داخل البرنامج
   onUpdateReady: (callback: (data: { version: string }) => void) => {
     const listener = (_event: unknown, data: { version: string }): void => callback(data)

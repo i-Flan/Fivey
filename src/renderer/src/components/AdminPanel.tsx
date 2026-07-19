@@ -25,6 +25,7 @@ export default function AdminPanel({ onClose, onReload, onAdminChange }: Props):
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
   const [mode, setMode] = useState<'list' | 'add' | 'edit'>('list')
+  const [published, setPublished] = useState<Set<string>>(new Set())
 
   const [aFolder, setAFolder] = useState('')
   const [aCat, setACat] = useState<ModCategory>('graphics')
@@ -113,6 +114,23 @@ export default function AdminPanel({ onClose, onReload, onAdminChange }: Props):
       setMsg('')
       await reload()
     } else setMsg(r.error || 'فشل التعديل')
+  }
+
+  const publish = async (m: ModManifest): Promise<void> => {
+    setBusy(true)
+    setMsg('جارٍ نشر الإعلان...')
+    const r = await window.api.adminPublishMod({
+      id: m.id,
+      category: m.category,
+      nameAr: m.nameAr,
+      descriptionAr: m.descriptionAr,
+      preview: m.preview
+    })
+    setBusy(false)
+    if (r.success) {
+      setPublished((p) => new Set(p).add(m.id))
+      setMsg('')
+    } else setMsg(r.error || 'فشل النشر')
   }
 
   const del = async (m: ModManifest): Promise<void> => {
@@ -213,6 +231,9 @@ export default function AdminPanel({ onClose, onReload, onAdminChange }: Props):
                     <span className="admin-item-slug">{m.folderName}</span>
                   </div>
                   <div className="admin-item-actions">
+                    <button className={`admin-btn small ${published.has(m.id) ? 'done' : 'publish'}`} onClick={() => publish(m)}>
+                      {published.has(m.id) ? '✓ تم النشر' : '📢 نشر'}
+                    </button>
                     <button className="admin-btn small" onClick={() => openEdit(m)}>✏️ تعديل</button>
                     <button className="admin-btn small danger" onClick={() => del(m)}>🗑️ حذف</button>
                   </div>

@@ -14,6 +14,7 @@ import {
 import { getDefaultSettings, validatePaths } from './pathResolver'
 import type { AppSettings } from '../shared/types'
 import { startDiscordBot } from './discord_bot'
+import { announceMod, type PublishMod } from './announce'
 import { autoUpdater } from 'electron-updater'
 
 // التحديث التلقائي: عند تشغيل النسخة المثبّتة يفحص GitHub Releases،
@@ -309,6 +310,13 @@ function setupIpc(): void {
     const token = getAdminToken()
     if (!token) return { success: false, error: 'لا يوجد مفتاح مدير' }
     return adminDeleteMod(id, token)
+  })
+
+  // نشر إعلان المود في روم التصنيف عبر Webhook (زر "نشر" في لوحة الإدارة)
+  ipcMain.handle('admin-publish-mod', async (_event, mod: PublishMod) => {
+    const token = getAdminToken()
+    if (!token) return { success: false, error: 'لا يوجد مفتاح مدير' }
+    return announceMod(mod)
   })
 }
 

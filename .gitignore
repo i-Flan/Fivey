@@ -12,3 +12,4 @@ mods/
 .env.local
 token.txt
 github-token.txt
+webhooks.json
