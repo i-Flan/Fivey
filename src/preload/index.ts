@@ -24,7 +24,14 @@ const api = {
   adminPickFolder: () => ipcRenderer.invoke('admin-pick-folder'),
   adminAddMod: (input: unknown) => ipcRenderer.invoke('admin-add-mod', input),
   adminEditMod: (id: string, fields: unknown) => ipcRenderer.invoke('admin-edit-mod', id, fields),
-  adminDeleteMod: (id: string) => ipcRenderer.invoke('admin-delete-mod', id)
+  adminDeleteMod: (id: string) => ipcRenderer.invoke('admin-delete-mod', id),
+  // التحديث داخل البرنامج
+  onUpdateReady: (callback: (data: { version: string }) => void) => {
+    const listener = (_event: unknown, data: { version: string }): void => callback(data)
+    ipcRenderer.on('update-ready', listener)
+    return () => ipcRenderer.removeListener('update-ready', listener)
+  },
+  installUpdateNow: () => ipcRenderer.invoke('install-update-now')
 }
 
 if (process.contextIsolated) {

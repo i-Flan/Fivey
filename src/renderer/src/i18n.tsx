@@ -62,7 +62,13 @@ export const translations: Record<Lang, Record<string, string>> = {
     nameLabel: 'الاسم',
     descLabel: 'الوصف',
     cancel: 'إلغاء',
-    save: 'حفظ'
+    save: 'حفظ',
+
+    updateTitle: 'تحديث جديد جاهز',
+    updateBody: 'نزّلنا نسخة جديدة من Fivey. تبي تحدّث الآن؟',
+    updateNow: 'حدّث الآن',
+    updateLater: 'لاحقاً',
+    updateLaterHint: 'بيتحدّث تلقائياً لما تسكّر البرنامج'
   },
   en: {
     headerSubtitle: 'Mod Manager',
@@ -122,7 +128,13 @@ export const translations: Record<Lang, Record<string, string>> = {
     nameLabel: 'Name',
     descLabel: 'Description',
     cancel: 'Cancel',
-    save: 'Save'
+    save: 'Save',
+
+    updateTitle: 'A new update is ready',
+    updateBody: 'A new version of Fivey has been downloaded. Update now?',
+    updateNow: 'Update now',
+    updateLater: 'Later',
+    updateLaterHint: 'It will install automatically when you close the app'
   }
 }
 

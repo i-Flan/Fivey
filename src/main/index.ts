@@ -17,18 +17,24 @@ import { startDiscordBot } from './discord_bot'
 import { autoUpdater } from 'electron-updater'
 
 // التحديث التلقائي: عند تشغيل النسخة المثبّتة يفحص GitHub Releases،
-// ينزّل أي إصدار أحدث في الخلفية، ويثبّته عند إغلاق البرنامج.
+// ينزّل أي إصدار أحدث في الخلفية. بدل رسالة ويندوز، نرسل إشعاراً داخل
+// البرنامج فيه زرّين (حدّث الآن / لاحقاً). لو اختار لاحقاً يُثبّت عند الإغلاق.
 function setupAutoUpdate(): void {
   if (!app.isPackaged) return
   autoUpdater.autoDownload = true
+  autoUpdater.autoInstallOnAppQuit = true // لو ضغط "لاحقاً" يتثبّت عند إغلاق البرنامج
   autoUpdater.on('error', (err) => console.error('[AutoUpdate] error:', err?.message))
   autoUpdater.on('update-available', (info) =>
     console.log('[AutoUpdate] نسخة جديدة متوفرة:', info.version)
   )
-  autoUpdater.on('update-downloaded', (info) =>
-    console.log('[AutoUpdate] تم تنزيل النسخة:', info.version, '— ستُثبّت عند الإغلاق')
-  )
-  autoUpdater.checkForUpdatesAndNotify().catch((err) =>
+  autoUpdater.on('update-downloaded', (info) => {
+    console.log('[AutoUpdate] تم تنزيل النسخة:', info.version)
+    // نبلّغ الواجهة عشان تعرض رسالة التحديث الأنيقة داخل البرنامج
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('update-ready', { version: info.version })
+    }
+  })
+  autoUpdater.checkForUpdates().catch((err) =>
     console.error('[AutoUpdate] فشل الفحص:', err?.message)
   )
 }
@@ -52,6 +58,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
 </style></head><body><div class="card"><div class="wm"><span class="five">Five</span><span class="y">y</span></div><div class="sub">Mod Manager</div><div class="bar"><i></i></div></div></body></html>`
 
 let splashWindow: BrowserWindow | null = null
+let mainWindow: BrowserWindow | null = null
 function createSplash(): void {
   splashWindow = new BrowserWindow({
     width: 460,
@@ -68,7 +75,7 @@ function createSplash(): void {
 }
 
 function createWindow(): void {
-  const mainWindow = new BrowserWindow({
+  const win = new BrowserWindow({
     width: 1100,
     height: 720,
     minWidth: 900,
@@ -82,25 +89,26 @@ function createWindow(): void {
       sandbox: false
     }
   })
+  mainWindow = win
 
-  mainWindow.on('ready-to-show', () => {
+  win.on('ready-to-show', () => {
     // نبقي شاشة البداية ظاهرة مدة قصيرة ثم نفتح البرنامج
     setTimeout(() => {
       if (splashWindow && !splashWindow.isDestroyed()) splashWindow.close()
       splashWindow = null
-      mainWindow.show()
+      win.show()
     }, 1600)
   })
 
-  mainWindow.webContents.setWindowOpenHandler((details) => {
+  win.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
   })
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+    win.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    win.loadFile(join(__dirname, '../renderer/index.html'))
   }
 }
 
@@ -182,6 +190,12 @@ function setupIpc(): void {
 
   ipcMain.handle('get-mods-dir', () => {
     return getModsDirectory()
+  })
+
+  // "حدّث الآن": يغلق البرنامج ويثبّت النسخة الجديدة فوراً ثم يعيد فتحه
+  ipcMain.handle('install-update-now', () => {
+    setImmediate(() => autoUpdater.quitAndInstall(false, true))
+    return { success: true }
   })
 
   ipcMain.handle('open-mods-folder', () => {

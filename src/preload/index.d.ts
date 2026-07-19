@@ -51,6 +51,8 @@ interface API {
     fields: { nameAr?: string; descriptionAr?: string; preview?: string; soundPreview?: string; videoPreview?: string }
   ) => Promise<{ success: boolean; error?: string }>
   adminDeleteMod: (id: string) => Promise<{ success: boolean; error?: string }>
+  onUpdateReady: (callback: (data: { version: string }) => void) => () => void
+  installUpdateNow: () => Promise<{ success: boolean }>
 }
 
 declare global {

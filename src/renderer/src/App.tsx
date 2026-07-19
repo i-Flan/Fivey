@@ -6,6 +6,7 @@ import ModCard from './components/ModCard'
 import SettingsPanel from './components/SettingsPanel'
 import EditModal from './components/EditModal'
 import AdminPanel from './components/AdminPanel'
+import UpdateBanner from './components/UpdateBanner'
 import './App.css'
 
 // أسماء التصنيفات دائماً بالإنجليزي (موحّدة)، وباقي الكلام يتبع اللغة المختارة
@@ -33,6 +34,7 @@ export default function App(): React.JSX.Element {
   const [downloadProgress, setDownloadProgress] = useState<Record<string, number>>({})
   const [isAdmin, setIsAdmin] = useState(false)
   const [showAdmin, setShowAdmin] = useState(false)
+  const [updateVersion, setUpdateVersion] = useState<string | null>(null)
 
   const i18n = makeI18n((settings.language as Lang) || 'ar')
   const { t, dir } = i18n
@@ -63,6 +65,7 @@ export default function App(): React.JSX.Element {
   }, [loadMods])
 
   useEffect(() => window.api.onDownloadProgress(({ modId, progress }) => setDownloadProgress((prev) => ({ ...prev, [modId]: progress }))), [])
+  useEffect(() => window.api.onUpdateReady(({ version }) => setUpdateVersion(version)), [])
   useEffect(() => { window.api.adminStatus().then((s) => setIsAdmin(s.isAdmin)) }, [])
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => { if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) { e.preventDefault(); setShowAdmin(true) } }
@@ -163,6 +166,7 @@ export default function App(): React.JSX.Element {
         {showAdmin && <AdminPanel onClose={() => setShowAdmin(false)} onReload={loadMods} onAdminChange={setIsAdmin} />}
         {showSettings && <SettingsPanel settings={settings} onSave={save} onClose={() => setShowSettings(false)} />}
         {editingMod && <EditModal mod={editingMod} onClose={() => setEditingMod(null)} onSave={handleSaveEdit} />}
+        {updateVersion && <UpdateBanner version={updateVersion} onDismiss={() => setUpdateVersion(null)} />}
         {toast && <div className={`toast ${toast.type}`}>{toast.msg}</div>}
       </div>
     </I18nContext.Provider>
