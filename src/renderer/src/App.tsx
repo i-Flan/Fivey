@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import type { ModManifest, ModCategory, ActiveMods, AppSettings } from '../../../shared/types'
 import { I18nContext, makeI18n, type Lang } from './i18n'
 import Header from './components/Header'
@@ -68,7 +68,8 @@ export default function App(): React.JSX.Element {
   useEffect(() => window.api.onUpdateReady(({ version }) => setUpdateVersion(version)), [])
   useEffect(() => { window.api.adminStatus().then((s) => setIsAdmin(s.isAdmin)) }, [])
   useEffect(() => {
-    const onKey = (e: KeyboardEvent): void => { if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) { e.preventDefault(); setShowAdmin(true) } }
+    // نتحقق من الزر الفيزيائي (KeyA) عشان يشتغل حتى لو الكيبورد على اللغة العربية
+    const onKey = (e: KeyboardEvent): void => { if (e.ctrlKey && e.shiftKey && (e.code === 'KeyA' || e.key === 'A' || e.key === 'a')) { e.preventDefault(); setShowAdmin(true) } }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
@@ -121,13 +122,21 @@ export default function App(): React.JSX.Element {
     showToast('toastEditSaved', 'success')
   }
 
+  // فتح سري للوحة الإدارة: ٥ نقرات سريعة على الشعار (بديل للاختصار)
+  const tapRef = useRef<{ count: number; last: number }>({ count: 0, last: 0 })
+  const secretTap = (): void => {
+    const now = Date.now()
+    tapRef.current = { count: now - tapRef.current.last < 800 ? tapRef.current.count + 1 : 1, last: now }
+    if (tapRef.current.count >= 5) { tapRef.current.count = 0; setShowAdmin(true) }
+  }
+
   const cat = CATS.find((c) => c.key === activeCategory)!
   const list = showFavorites ? mods.filter((m) => m.favorite) : mods.filter((m) => m.category === activeCategory)
 
   return (
     <I18nContext.Provider value={i18n}>
       <div className="app" dir={dir}>
-        <Header gtaValid={gtaValid} fivemValid={fivemValid} isAdmin={isAdmin} onOpenAdmin={() => setShowAdmin(true)} onOpenSettings={() => setShowSettings(true)} onRefresh={refresh} refreshing={refreshing} />
+        <Header gtaValid={gtaValid} fivemValid={fivemValid} isAdmin={isAdmin} onOpenAdmin={() => setShowAdmin(true)} onSecretOpen={secretTap} onOpenSettings={() => setShowSettings(true)} onRefresh={refresh} refreshing={refreshing} />
         <main className="main-content">
           <nav className="category-switcher">
             <div className="categories-left">
