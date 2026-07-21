@@ -25,6 +25,8 @@ export interface ModManifest {
   downloadUrl?: string
   size?: number
   downloaded?: boolean
+  // مود خاص بالبوستر — محلي على جهازه فقط
+  personal?: boolean
 }
 
 // عنصر في ملف القائمة المركزي catalog.json

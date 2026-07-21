@@ -24,14 +24,16 @@ export default function AdminPanel({ onClose, onReload, onAdminChange }: Props):
   const [q, setQ] = useState('')
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
-  const [mode, setMode] = useState<'list' | 'add' | 'edit'>('list')
+  const [mode, setMode] = useState<'list' | 'add' | 'edit' | 'hooks'>('list')
   const [published, setPublished] = useState<Set<string>>(new Set())
+  const [hooks, setHooks] = useState<Record<string, string>>({})
 
   const [aFolder, setAFolder] = useState('')
   const [aCat, setACat] = useState<ModCategory>('graphics')
   const [aSlug, setASlug] = useState('')
   const [aName, setAName] = useState('')
   const [aDesc, setADesc] = useState('')
+  const [aSound, setASound] = useState('')
 
   const [eId, setEId] = useState('')
   const [eName, setEName] = useState('')
@@ -81,6 +83,10 @@ export default function AdminPanel({ onClose, onReload, onAdminChange }: Props):
     setBusy(true)
     setMsg('جارٍ الضغط والرفع... (قد يأخذ وقت حسب الحجم)')
     const r = await window.api.adminAddMod({ folderPath: aFolder, category: aCat, folderName: aSlug, nameAr: aName, descriptionAr: aDesc })
+    if (r.success && aSound && r.id) {
+      setMsg('جارٍ رفع مقطع الصوت...')
+      await window.api.adminUploadSound(r.id, aSound)
+    }
     setBusy(false)
     if (r.success) {
       setMode('list')
@@ -88,6 +94,7 @@ export default function AdminPanel({ onClose, onReload, onAdminChange }: Props):
       setASlug('')
       setAName('')
       setADesc('')
+      setASound('')
       setMsg('')
       await reload()
     } else setMsg(r.error || 'فشل الرفع')
@@ -114,6 +121,38 @@ export default function AdminPanel({ onClose, onReload, onAdminChange }: Props):
       setMsg('')
       await reload()
     } else setMsg(r.error || 'فشل التعديل')
+  }
+
+  // رفع مقطع صوت من الجهاز للمود المفتوح في وضع التعديل
+  const pickAndUploadSound = async (): Promise<void> => {
+    const p = await window.api.adminPickAudio()
+    if (!p) return
+    setBusy(true)
+    setMsg('جارٍ رفع مقطع الصوت...')
+    const r = await window.api.adminUploadSound(eId, p)
+    setBusy(false)
+    if (r.success && r.url) {
+      setESound(r.url)
+      setMsg('')
+      await reload()
+    } else setMsg(r.error || 'فشل رفع الصوت')
+  }
+
+  const openHooks = async (): Promise<void> => {
+    setMsg('')
+    setHooks((await window.api.adminGetWebhooks()) || {})
+    setMode('hooks')
+  }
+
+  const saveHooks = async (): Promise<void> => {
+    setBusy(true)
+    setMsg('جارٍ الحفظ...')
+    const r = await window.api.adminSetWebhooks(hooks)
+    setBusy(false)
+    if (r.success) {
+      setMode('list')
+      setMsg('')
+    } else setMsg(r.error || 'فشل حفظ الروابط')
   }
 
   const publish = async (m: ModManifest): Promise<void> => {
@@ -185,10 +224,40 @@ export default function AdminPanel({ onClose, onReload, onAdminChange }: Props):
             <input className="admin-input" value={aName} onChange={(e) => setAName(e.target.value)} placeholder="جرافكس ناف" />
             <label className="admin-label">الوصف (اختياري)</label>
             <input className="admin-input" value={aDesc} onChange={(e) => setADesc(e.target.value)} />
+            <label className="admin-label">مقطع صوت المعاينة (اختياري)</label>
+            <div className="admin-row">
+              <input className="admin-input" value={aSound} readOnly dir="ltr" placeholder="اختر ملف صوت من جهازك" />
+              <button className="admin-btn" onClick={async () => { const p = await window.api.adminPickAudio(); if (p) setASound(p) }}>🎵 اختر</button>
+            </div>
             {msg && <p className="admin-msg">{msg}</p>}
             <div className="admin-row admin-actions">
               <button className="admin-btn" onClick={() => { setMode('list'); setMsg('') }}>رجوع</button>
               <button className="admin-btn primary" disabled={busy} onClick={submitAdd}>رفع المود</button>
+            </div>
+          </div>
+        ) : mode === 'hooks' ? (
+          <div className="admin-body">
+            <p className="admin-hint">
+              روابط النشر لكل تصنيف (Discord Webhook). تُحفظ على جهازك فقط، ولازمة عشان يشتغل زر «نشر».
+              <br />
+              تطلعها من ديسكورد: إعدادات السيرفر ← Integrations ← Webhooks ← New Webhook ← Copy Webhook URL
+            </p>
+            {CATS.map((c) => (
+              <div key={c.key}>
+                <label className="admin-label">{c.name}</label>
+                <input
+                  className="admin-input"
+                  dir="ltr"
+                  placeholder="https://discord.com/api/webhooks/..."
+                  value={hooks[c.key] || ''}
+                  onChange={(e) => setHooks({ ...hooks, [c.key]: e.target.value })}
+                />
+              </div>
+            ))}
+            {msg && <p className="admin-msg">{msg}</p>}
+            <div className="admin-row admin-actions">
+              <button className="admin-btn" onClick={() => { setMode('list'); setMsg('') }}>رجوع</button>
+              <button className="admin-btn primary" disabled={busy} onClick={saveHooks}>حفظ الروابط</button>
             </div>
           </div>
         ) : mode === 'edit' ? (
@@ -199,8 +268,11 @@ export default function AdminPanel({ onClose, onReload, onAdminChange }: Props):
             <input className="admin-input" value={eDesc} onChange={(e) => setEDesc(e.target.value)} />
             <label className="admin-label">رابط صورة الغلاف (اختياري)</label>
             <input className="admin-input" value={ePreview} onChange={(e) => setEPreview(e.target.value)} dir="ltr" placeholder="https://..." />
-            <label className="admin-label">رابط مقطع صوت (اختياري)</label>
-            <input className="admin-input" value={eSound} onChange={(e) => setESound(e.target.value)} dir="ltr" placeholder="https://..." />
+            <label className="admin-label">مقطع صوت المعاينة (اختياري)</label>
+            <div className="admin-row">
+              <input className="admin-input" value={eSound} onChange={(e) => setESound(e.target.value)} dir="ltr" placeholder="https://... أو ارفع من جهازك" />
+              <button className="admin-btn" disabled={busy} onClick={pickAndUploadSound}>🎵 رفع من جهازي</button>
+            </div>
             <label className="admin-label">رابط فيديو معاينة (اختياري)</label>
             <input className="admin-input" value={eVideo} onChange={(e) => setEVideo(e.target.value)} dir="ltr" placeholder="https://..." />
             {msg && <p className="admin-msg">{msg}</p>}
@@ -220,6 +292,7 @@ export default function AdminPanel({ onClose, onReload, onAdminChange }: Props):
                 ))}
               </div>
               <input className="admin-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="🔍 بحث..." />
+              <button className="admin-btn" onClick={openHooks} title="روابط النشر (Webhooks)">🔗</button>
               <button className="admin-btn primary" onClick={() => { setACat(cat); setMode('add'); setMsg('') }}>+ إضافة</button>
             </div>
             {msg && <p className="admin-msg">{msg}</p>}

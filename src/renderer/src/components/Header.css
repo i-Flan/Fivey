@@ -16,6 +16,53 @@
   -webkit-app-region: no-drag;
 }
 
+/* زر البوستر — بنفسجي متوهّج */
+.booster-btn-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  color: #f47fff;
+  background: rgba(244, 127, 255, 0.09);
+  border: 1px solid rgba(244, 127, 255, 0.38);
+  transition: all 0.2s ease;
+}
+.booster-btn-header:hover {
+  color: #230b28;
+  background: linear-gradient(135deg, #f47fff, #c94fd6);
+  border-color: #f9a3ff;
+  box-shadow: 0 4px 18px rgba(244, 127, 255, 0.42);
+  transform: translateY(-1px);
+}
+/* زر الرجوع للرئيسية: أحمر (لون الوضع العادي) ليدل على الخروج من وضع البوستر */
+.booster-btn-header.home {
+  color: #fff;
+  background: linear-gradient(135deg, #e01e2b, #8f0f18);
+  border-color: #f5313f;
+  box-shadow: 0 0 16px rgba(224, 30, 43, 0.4);
+}
+.booster-btn-header.home:hover {
+  color: #fff;
+  background: linear-gradient(135deg, #f5313f, #a8121c);
+  border-color: #f5313f;
+  box-shadow: 0 4px 18px rgba(224, 30, 43, 0.5);
+}
+.bb-icon {
+  font-size: 13px;
+  filter: drop-shadow(0 0 5px rgba(244, 127, 255, 0.9));
+  animation: bbPulse 2.4s ease-in-out infinite;
+}
+.booster-btn-header.home .bb-icon { animation: none; filter: none; }
+@keyframes bbPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.14); opacity: 0.85; }
+}
+
 .logo {
   display: flex;
   flex-direction: column;
@@ -60,8 +107,9 @@
 }
 
 .wm-y {
-  color: #e01e2b;
-  text-shadow: 0 0 14px rgba(224, 30, 43, 0.55);
+  color: var(--accent);
+  text-shadow: 0 0 14px var(--accent-glow);
+  transition: color 0.45s ease, text-shadow 0.45s ease;
 }
 
 .wm-sub {

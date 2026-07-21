@@ -26,6 +26,10 @@ const api = {
   adminEditMod: (id: string, fields: unknown) => ipcRenderer.invoke('admin-edit-mod', id, fields),
   adminDeleteMod: (id: string) => ipcRenderer.invoke('admin-delete-mod', id),
   adminPublishMod: (mod: unknown) => ipcRenderer.invoke('admin-publish-mod', mod),
+  adminPickAudio: () => ipcRenderer.invoke('admin-pick-audio'),
+  adminUploadSound: (id: string, filePath: string) => ipcRenderer.invoke('admin-upload-sound', id, filePath),
+  adminGetWebhooks: () => ipcRenderer.invoke('admin-get-webhooks'),
+  adminSetWebhooks: (hooks: unknown) => ipcRenderer.invoke('admin-set-webhooks', hooks),
   // التحديث داخل البرنامج
   onUpdateReady: (callback: (data: { version: string }) => void) => {
     const listener = (_event: unknown, data: { version: string }): void => callback(data)
@@ -33,6 +37,16 @@ const api = {
     return () => ipcRenderer.removeListener('update-ready', listener)
   },
   installUpdateNow: () => ipcRenderer.invoke('install-update-now'),
+  // البوستر
+  boosterStatus: () => ipcRenderer.invoke('booster-status'),
+  boosterVerify: () => ipcRenderer.invoke('booster-verify'),
+  boosterOpenBoostPage: () => ipcRenderer.invoke('booster-open-boost-page'),
+  boosterPickSource: (kind: 'folder' | 'file') => ipcRenderer.invoke('booster-pick-source', kind),
+  boosterPickImage: () => ipcRenderer.invoke('booster-pick-image'),
+  boosterListMods: () => ipcRenderer.invoke('booster-list-mods'),
+  boosterAddMod: (input: unknown) => ipcRenderer.invoke('booster-add-mod', input),
+  boosterUpdateMod: (id: string, fields: unknown) => ipcRenderer.invoke('booster-update-mod', id, fields),
+  boosterDeleteMod: (id: string) => ipcRenderer.invoke('booster-delete-mod', id),
   // أزرار التحكم بالنافذة
   windowMinimize: () => ipcRenderer.invoke('window-minimize'),
   windowMaximize: () => ipcRenderer.invoke('window-maximize'),

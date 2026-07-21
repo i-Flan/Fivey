@@ -1,5 +1,5 @@
 import { createWriteStream, existsSync, readFileSync, writeFileSync, statSync, rmSync } from 'fs'
-import { join } from 'path'
+import { join, extname } from 'path'
 import { app } from 'electron'
 import archiver from 'archiver'
 import { CONTENT_OWNER, CONTENT_REPO, CONTENT_TAG } from './remoteConfig'
@@ -172,7 +172,7 @@ export interface AddModInput {
   descriptionAr?: string
 }
 
-export async function adminAddMod(input: AddModInput, token: string): Promise<{ success: boolean; error?: string }> {
+export async function adminAddMod(input: AddModInput, token: string): Promise<{ success: boolean; id?: string; error?: string }> {
   try {
     const folderName = slug(input.folderName)
     if (!folderName) return { success: false, error: 'الاسم المختصر لازم إنجليزي' }
@@ -200,9 +200,53 @@ export async function adminAddMod(input: AddModInput, token: string): Promise<{ 
     mods = mods.filter((m) => m.id !== id)
     mods.push({ id, category: input.category, folderName, nameAr: input.nameAr, descriptionAr: input.descriptionAr || '', downloadUrl, size })
     await putCatalog(release, mods, token)
-    return { success: true }
+    return { success: true, id }
   } catch (err) {
     return { success: false, error: (err as Error)?.message || 'فشل الرفع' }
+  }
+}
+
+// أنواع ملفات الصوت المدعومة لمعاينة الصوت
+const AUDIO_MIME: Record<string, string> = {
+  '.mp3': 'audio/mpeg',
+  '.wav': 'audio/wav',
+  '.ogg': 'audio/ogg',
+  '.m4a': 'audio/mp4',
+  '.aac': 'audio/aac'
+}
+
+// يرفع مقطع صوت من جهاز المدير كمرفق، ويضبطه كصوت معاينة للمود
+export async function adminUploadSound(
+  id: string,
+  filePath: string,
+  token: string
+): Promise<{ success: boolean; url?: string; error?: string }> {
+  try {
+    if (!existsSync(filePath)) return { success: false, error: 'ملف الصوت غير موجود' }
+    const ext = extname(filePath).toLowerCase()
+    const mime = AUDIO_MIME[ext]
+    if (!mime) return { success: false, error: 'صيغة الصوت غير مدعومة (mp3, wav, ogg, m4a, aac)' }
+
+    let release = await getOrCreateRelease(token)
+    const mods = await getCatalogMods(release)
+    const m = mods.find((x) => x.id === id)
+    if (!m) return { success: false, error: 'المود غير موجود' }
+
+    const assetName = `${m.folderName}-preview${ext}`
+    const old = release.assets.find((a) => a.name === assetName)
+    if (old) await deleteAssetById(old.id, token)
+
+    await uploadAsset(release.id, assetName, filePath, mime, token)
+
+    const url = `https://github.com/${CONTENT_OWNER}/${CONTENT_REPO}/releases/download/${CONTENT_TAG}/${assetName}`
+    release = await getOrCreateRelease(token)
+    const fresh = await getCatalogMods(release)
+    const target = fresh.find((x) => x.id === id)
+    if (target) target.soundPreview = url
+    await putCatalog(release, fresh, token)
+    return { success: true, url }
+  } catch (err) {
+    return { success: false, error: (err as Error)?.message || 'فشل رفع الصوت' }
   }
 }
 

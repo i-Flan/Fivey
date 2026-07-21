@@ -3,6 +3,7 @@ import { app } from 'electron'
 import type { ModCategory, ModManifest } from '../shared/types'
 import { scanAllMods, findModFolder, ensureModsStructure, getModFolderName } from './modScanner'
 import { fetchRemoteCatalog } from './remoteCatalog'
+import { listPersonalMods } from './personalMods'
 
 // مجلد المودات = مكان قابل للكتابة لكل مستخدم. المودات تُنزّل هنا من GitHub.
 export function getModsDirectory(): string {
@@ -86,7 +87,30 @@ export async function buildModCatalog(): Promise<ModManifest[]> {
     }
   }
 
+  addPersonalMods(byId, local)
   return [...byId.values()]
+}
+
+// المودات الخاصة بالبوستر: موجودة محلياً فقط ومو ضمن القائمة المركزية،
+// فنضيفها يدوياً حتى لا تُحذف عند بناء القائمة.
+function addPersonalMods(byId: Map<string, ModManifest>, local: ModManifest[]): void {
+  try {
+    for (const p of listPersonalMods()) {
+      const scanned = local.find((m) => m.id === p.id)
+      if (!scanned) continue
+      byId.set(p.id, {
+        ...scanned,
+        nameAr: p.nameAr || scanned.nameAr,
+        name: p.nameAr || scanned.name,
+        preview: p.image ?? scanned.preview,
+        folderName: p.folderName,
+        downloaded: true,
+        personal: true
+      })
+    }
+  } catch {
+    // لو صار خطأ نكمّل بالقائمة العادية
+  }
 }
 
 export function getModSourceDir(modId: string, _category: string): string {

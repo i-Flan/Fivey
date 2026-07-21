@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'fs'
+import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { app, nativeImage } from 'electron'
 import type { ModCategory } from '../shared/types'
@@ -51,6 +51,28 @@ function loadWebhooks(): { hooks: Partial<Record<ModCategory, string>>; found: b
     }
   }
   return { hooks: {}, found: false }
+}
+
+// قراءة روابط النشر الحالية (لعرضها في لوحة الإدارة)
+export function getWebhooksConfig(): Partial<Record<ModCategory, string>> {
+  return loadWebhooks().hooks
+}
+
+// حفظ روابط النشر — تُكتب دائماً في userData عشان تبقى بعد التحديثات
+export function setWebhooksConfig(
+  hooks: Partial<Record<ModCategory, string>>
+): { success: boolean; error?: string } {
+  try {
+    const clean: Record<string, string> = {}
+    for (const [k, v] of Object.entries(hooks || {})) {
+      const url = (v || '').trim()
+      if (url) clean[k] = url
+    }
+    writeFileSync(join(app.getPath('userData'), 'webhooks.json'), JSON.stringify(clean, null, 2), 'utf8')
+    return { success: true }
+  } catch (err) {
+    return { success: false, error: (err as Error)?.message || 'فشل حفظ الروابط' }
+  }
 }
 
 // مسار أيقونة Fivey (المصدر في التطوير، والمورد الخارجي في النسخة المثبّتة)

@@ -3,7 +3,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { loadModCatalog, buildModCatalog, getModsDirectory, initModsDirectory } from './modCatalog'
 import { downloadAndInstall } from './modDownloader'
-import { getAdminToken, setAdminToken, verifyToken, adminAddMod, adminEditMod, adminDeleteMod } from './adminApi'
+import { getAdminToken, setAdminToken, verifyToken, adminAddMod, adminEditMod, adminDeleteMod, adminUploadSound } from './adminApi'
 import type { ModCategory } from '../shared/types'
 import {
   loadState,
@@ -14,7 +14,9 @@ import {
 import { getDefaultSettings, validatePaths } from './pathResolver'
 import type { AppSettings } from '../shared/types'
 import { startDiscordBot } from './discord_bot'
-import { announceMod, type PublishMod } from './announce'
+import { announceMod, getWebhooksConfig, setWebhooksConfig, type PublishMod } from './announce'
+import { getBoosterState, verifyBooster, openBoostPage } from './boosterAuth'
+import { addPersonalMod, updatePersonalMod, deletePersonalMod, listPersonalMods } from './personalMods'
 import { autoUpdater } from 'electron-updater'
 
 // التحديث التلقائي: عند تشغيل النسخة المثبّتة يفحص GitHub Releases،
@@ -86,7 +88,7 @@ function createWindow(): void {
     // بدون شريط ويندوز — أزرار التحكم مدمجة داخل التطبيق (TitleBar)
     frame: false,
     backgroundColor: '#0b0b0d',
-    title: 'Dev by Tik @le_o',
+    title: 'Tik @le_o | Dis.gg/k71',
     icon: join(app.getAppPath(), 'build', 'icon.png'),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -200,6 +202,52 @@ function setupIpc(): void {
     return getModsDirectory()
   })
 
+  // ── البوستر ─────────────────────────────────────────────
+  ipcMain.handle('booster-status', () => getBoosterState())
+  ipcMain.handle('booster-verify', async () => verifyBooster(mainWindow))
+  ipcMain.handle('booster-open-boost-page', () => {
+    openBoostPage()
+    return { success: true }
+  })
+
+  // اختيار ملف/مجلد للمود الخاص
+  ipcMain.handle('booster-pick-source', async (_event, kind: 'folder' | 'file') => {
+    const result = await dialog.showOpenDialog(
+      kind === 'folder'
+        ? { properties: ['openDirectory'], title: 'اختر مجلد المود' }
+        : { properties: ['openFile'], title: 'اختر ملف المود', filters: [{ name: 'Mod', extensions: ['zip', 'rpf', 'dat', 'oiv', 'awc'] }] }
+    )
+    if (result.canceled || result.filePaths.length === 0) return null
+    return result.filePaths[0]
+  })
+
+  ipcMain.handle('booster-pick-image', async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ['openFile'],
+      title: 'اختر صورة المود',
+      filters: [{ name: 'Image', extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif'] }]
+    })
+    if (result.canceled || result.filePaths.length === 0) return null
+    return result.filePaths[0]
+  })
+
+  ipcMain.handle('booster-list-mods', () => listPersonalMods())
+
+  ipcMain.handle('booster-add-mod', async (_event, input: Parameters<typeof addPersonalMod>[0]) => {
+    if (!getBoosterState().isBooster) return { success: false, error: 'هذي الميزة للبوسترز فقط' }
+    return addPersonalMod(input)
+  })
+
+  ipcMain.handle('booster-update-mod', (_event, id: string, fields: { nameAr?: string; imagePath?: string }) => {
+    if (!getBoosterState().isBooster) return { success: false, error: 'هذي الميزة للبوسترز فقط' }
+    return updatePersonalMod(id, fields)
+  })
+
+  ipcMain.handle('booster-delete-mod', (_event, id: string) => {
+    if (!getBoosterState().isBooster) return { success: false, error: 'هذي الميزة للبوسترز فقط' }
+    return deletePersonalMod(id)
+  })
+
   // أزرار التحكم بالنافذة (شريط العنوان المخصص داخل التطبيق)
   ipcMain.handle('window-minimize', () => mainWindow?.minimize())
   ipcMain.handle('window-close', () => mainWindow?.close())
@@ -298,6 +346,23 @@ function setupIpc(): void {
     return result.filePaths[0]
   })
 
+  // اختيار مقطع صوت من جهاز المدير (لمعاينة الصوت داخل البرنامج)
+  ipcMain.handle('admin-pick-audio', async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ['openFile'],
+      title: 'اختر مقطع الصوت',
+      filters: [{ name: 'Audio', extensions: ['mp3', 'wav', 'ogg', 'm4a', 'aac'] }]
+    })
+    if (result.canceled || result.filePaths.length === 0) return null
+    return result.filePaths[0]
+  })
+
+  ipcMain.handle('admin-upload-sound', async (_event, id: string, filePath: string) => {
+    const token = getAdminToken()
+    if (!token) return { success: false, error: 'لا يوجد مفتاح مدير' }
+    return adminUploadSound(id, filePath, token)
+  })
+
   ipcMain.handle(
     'admin-add-mod',
     async (
@@ -327,6 +392,17 @@ function setupIpc(): void {
     const token = getAdminToken()
     if (!token) return { success: false, error: 'لا يوجد مفتاح مدير' }
     return adminDeleteMod(id, token)
+  })
+
+  // روابط النشر (Webhooks) — تُضبط من داخل لوحة الإدارة
+  ipcMain.handle('admin-get-webhooks', () => {
+    if (!getAdminToken()) return {}
+    return getWebhooksConfig()
+  })
+
+  ipcMain.handle('admin-set-webhooks', (_event, hooks: Record<string, string>) => {
+    if (!getAdminToken()) return { success: false, error: 'لا يوجد مفتاح مدير' }
+    return setWebhooksConfig(hooks)
   })
 
   // نشر إعلان المود في روم التصنيف عبر Webhook (زر "نشر" في لوحة الإدارة)

@@ -18,6 +18,7 @@ export default function SettingsPanel({ settings, onSave, onClose }: SettingsPan
       <div className="dev-credit">
         <span className="dev-label">DEVELOPED BY</span>
         <a className="dev-link" href="https://guns.lol/le_o" target="_blank" rel="noreferrer">Tik&nbsp;·&nbsp;@le_o<span className="dev-arrow">↗</span></a>
+        <a className="dev-link" href="https://discord.gg/k71" target="_blank" rel="noreferrer">Dis.gg/k71<span className="dev-arrow">↗</span></a>
       </div>
       <div className="setting-group"><label>{t('language')}</label><div className="lang-switch" data-active={lang} dir="ltr"><span className="lang-thumb" /><button className={lang === 'ar' ? 'active' : ''} onClick={() => changeLang('ar')}>العربية</button><button className={lang === 'en' ? 'active' : ''} onClick={() => changeLang('en')}>English</button></div></div>
       <div className="setting-group"><label>{t('fivemPath')}</label><div className="path-input-row"><input className="path-input" value={fivemPath} onChange={(e) => setFivemPath(e.target.value)} placeholder="C:\\Users\\...\\FiveM\\FiveM.app" dir="ltr" /><button className="browse-btn" onClick={handleBrowse}>{t('browse')}</button></div></div>

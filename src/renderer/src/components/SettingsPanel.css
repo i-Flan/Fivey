@@ -61,8 +61,9 @@
   gap: 8px;
   padding: 16px;
   border-radius: 12px;
-  background: radial-gradient(circle at 50% 0, rgba(224, 30, 43, 0.14), transparent 70%), var(--bg-card);
-  border: 1px solid rgba(224, 30, 43, 0.28);
+  background: radial-gradient(circle at 50% 0, var(--accent-glow), transparent 70%), var(--bg-card);
+  border: 1px solid var(--accent-glow);
+  transition: background 0.45s ease, border-color 0.45s ease;
   /* خط لاتيني ثابت حتى لا يتغيّر حجم الاسم عند تبديل اللغة */
   font-family: var(--font-en);
   direction: ltr;
@@ -89,13 +90,21 @@
   color: #fff;
   padding: 7px 22px;
   border-radius: 24px;
-  background: linear-gradient(135deg, #e01e2b, #8f0f18);
+  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
   box-shadow: 0 6px 18px var(--accent-glow);
   opacity: 0;
   transform: translateY(10px);
   animation: revealUp 0.55s cubic-bezier(.22, 1, .36, 1) forwards 0.3s;
   transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
 }
+/* الزر الثاني (رابط الديسكورد) يظهر بعد الأول بلمسة تتابع */
+.dev-link + .dev-link {
+  font-size: 15px;
+  padding: 6px 20px;
+  animation-delay: 0.45s;
+}
+.dev-link + .dev-link::before { animation-delay: 1.6s; }
+
 /* لمعة تمرّ فوق الاسم باستمرار */
 .dev-link::before {
   content: '';

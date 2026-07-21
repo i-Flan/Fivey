@@ -15,6 +15,8 @@
   --accent: #e01e2b;
   --accent-hover: #f5313f;
   --accent-glow: rgba(224, 30, 43, 0.30);
+  /* الدرجة الغامقة من لون التمييز (تُستخدم في تدرّجات الأزرار) */
+  --accent-deep: #8f0f18;
   --accent-green: #34c98a;
   --accent-red: #ff5a68;
   --text-primary: #f3f4f6;
@@ -25,6 +27,27 @@
   --font-ar: 'Thmanyah', 'Cairo', Tahoma, Arial, sans-serif;
   --font-en: 'Saira', Arial, sans-serif;
 }
+/* وضع البوستر: كل ما هو أحمر يتحوّل إلى بنفسجي #f47fff */
+.app.booster {
+  --accent: #f47fff;
+  --accent-hover: #f9a3ff;
+  --accent-glow: rgba(244, 127, 255, 0.32);
+  --accent-deep: #c94fd6;
+  --accent-red: #f9a3ff;
+  --border: #33243a;
+  --bg-card: #191320;
+  --bg-card-hover: #221830;
+  --bg-secondary: #150f1b;
+  --steel-light: #4a3a55;
+}
+/* انتقال ناعم عند الدخول/الخروج من وضع البوستر */
+.app { transition: background 0.45s ease; }
+.app.booster .header,
+.app.booster .titlebar {
+  background: linear-gradient(180deg, rgba(30, 20, 38, 0.94), rgba(17, 11, 22, 0.86));
+}
+.app.booster::before { filter: hue-rotate(275deg) saturate(1.5); opacity: 0.09; }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body, #root { width: 100%; height: 100%; }
 body { font-family: var(--font-ar); background: radial-gradient(circle at 100% 0, rgba(224, 30, 43, 0.14) 0, transparent 36%), radial-gradient(circle at 0 100%, rgba(60, 63, 72, 0.2) 0, transparent 42%), var(--bg-primary); color: var(--text-primary); overflow: hidden; }

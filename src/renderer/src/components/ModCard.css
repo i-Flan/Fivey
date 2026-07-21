@@ -24,12 +24,12 @@
 .mod-info .description { min-height: 38px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--text-secondary); font-size: 12px; line-height: 1.6; }
 .mod-actions { display: flex; gap: 8px; margin-top: 15px; position: relative; }
 .btn { flex: 1; min-height: 37px; border-radius: 9px; border: 1px solid transparent; cursor: pointer; font-size: 12px; font-weight: 700; transition: filter .15s, background .15s; }
-.btn-activate { color: #fff; background: linear-gradient(135deg, var(--accent), #a8121c); }
+.btn-activate { color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-deep)); }
 .btn-activate:hover { filter: brightness(1.1); }
 .btn-activate:disabled { opacity: .55; cursor: wait; }
 .btn-active-label { color: #6fe3b4; border-color: #1f6b52; background: #0f2a22; cursor: default; }
-.btn-deactivate { color: var(--accent-red); border-color: #5a2830; background: #2a1418; }
-.btn-deactivate:hover { background: #38191f; }
+.btn-deactivate { color: var(--accent-red); border-color: var(--accent-glow); background: color-mix(in srgb, var(--accent) 14%, #141419); }
+.btn-deactivate:hover { background: color-mix(in srgb, var(--accent) 24%, #141419); }
 .btn-download { color: #fff; background: linear-gradient(135deg, #2f8f5b, #1f7a49); border-color: #2f8f5b; }
 .btn-download:hover { filter: brightness(1.1); }
 .btn-download:disabled { opacity: .7; cursor: wait; }

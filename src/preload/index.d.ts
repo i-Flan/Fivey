@@ -45,7 +45,12 @@ interface API {
     folderName: string
     nameAr: string
     descriptionAr?: string
-  }) => Promise<{ success: boolean; error?: string }>
+  }) => Promise<{ success: boolean; id?: string; error?: string }>
+  adminPickAudio: () => Promise<string | null>
+  adminUploadSound: (
+    id: string,
+    filePath: string
+  ) => Promise<{ success: boolean; url?: string; error?: string }>
   adminEditMod: (
     id: string,
     fields: { nameAr?: string; descriptionAr?: string; preview?: string; soundPreview?: string; videoPreview?: string }
@@ -58,8 +63,31 @@ interface API {
     descriptionAr?: string
     preview?: string
   }) => Promise<{ success: boolean; error?: string }>
+  adminGetWebhooks: () => Promise<Record<string, string>>
+  adminSetWebhooks: (
+    hooks: Record<string, string>
+  ) => Promise<{ success: boolean; error?: string }>
   onUpdateReady: (callback: (data: { version: string }) => void) => () => void
   installUpdateNow: () => Promise<{ success: boolean }>
+  boosterStatus: () => Promise<{ isBooster: boolean; user?: string }>
+  boosterVerify: () => Promise<{ success: boolean; isBooster?: boolean; user?: string; error?: string }>
+  boosterOpenBoostPage: () => Promise<{ success: boolean }>
+  boosterPickSource: (kind: 'folder' | 'file') => Promise<string | null>
+  boosterPickImage: () => Promise<string | null>
+  boosterListMods: () => Promise<
+    { id: string; category: string; folderName: string; nameAr: string; image?: string }[]
+  >
+  boosterAddMod: (input: {
+    sourcePath: string
+    category: string
+    nameAr: string
+    imagePath?: string
+  }) => Promise<{ success: boolean; id?: string; error?: string }>
+  boosterUpdateMod: (
+    id: string,
+    fields: { nameAr?: string; imagePath?: string }
+  ) => Promise<{ success: boolean; error?: string }>
+  boosterDeleteMod: (id: string) => Promise<{ success: boolean; error?: string }>
   windowMinimize: () => Promise<void>
   windowMaximize: () => Promise<boolean>
   windowClose: () => Promise<void>

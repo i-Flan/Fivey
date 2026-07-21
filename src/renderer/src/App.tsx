@@ -8,6 +8,7 @@ import EditModal from './components/EditModal'
 import AdminPanel from './components/AdminPanel'
 import UpdateBanner from './components/UpdateBanner'
 import TitleBar from './components/TitleBar'
+import BoosterPanel from './components/BoosterPanel'
 import './App.css'
 
 // أسماء التصنيفات دائماً بالإنجليزي (موحّدة)، وباقي الكلام يتبع اللغة المختارة
@@ -36,6 +37,9 @@ export default function App(): React.JSX.Element {
   const [isAdmin, setIsAdmin] = useState(false)
   const [showAdmin, setShowAdmin] = useState(false)
   const [updateVersion, setUpdateVersion] = useState<string | null>(null)
+  const [isBooster, setIsBooster] = useState(false)
+  const [boosterMode, setBoosterMode] = useState(false)
+  const [showBooster, setShowBooster] = useState(false)
 
   const i18n = makeI18n((settings.language as Lang) || 'ar')
   const { t, dir } = i18n
@@ -68,9 +72,17 @@ export default function App(): React.JSX.Element {
   useEffect(() => window.api.onDownloadProgress(({ modId, progress }) => setDownloadProgress((prev) => ({ ...prev, [modId]: progress }))), [])
   useEffect(() => window.api.onUpdateReady(({ version }) => setUpdateVersion(version)), [])
   useEffect(() => { window.api.adminStatus().then((s) => setIsAdmin(s.isAdmin)) }, [])
+  useEffect(() => { window.api.boosterStatus().then((s) => setIsBooster(s.isBooster)) }, [])
   useEffect(() => {
-    // نتحقق من الزر الفيزيائي (KeyA) عشان يشتغل حتى لو الكيبورد على اللغة العربية
-    const onKey = (e: KeyboardEvent): void => { if (e.ctrlKey && e.shiftKey && (e.code === 'KeyA' || e.key === 'A' || e.key === 'a')) { e.preventDefault(); setShowAdmin(true) } }
+    // زر Home يفتح لوحة الإدارة — إلا لو المستخدم يكتب داخل حقل
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key !== 'Home' && e.code !== 'Home') return
+      const el = e.target as HTMLElement | null
+      const tag = el?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el?.isContentEditable) return
+      e.preventDefault()
+      setShowAdmin(true)
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
@@ -131,25 +143,36 @@ export default function App(): React.JSX.Element {
     if (tapRef.current.count >= 5) { tapRef.current.count = 0; setShowAdmin(true) }
   }
 
+  // زر البوستر: غير مفعّل → يسأل ويتحقق. مفعّل → يبدّل بين وضع البوستر والرئيسية.
+  const onBoosterClick = (): void => {
+    if (!isBooster) return setShowBooster(true)
+    if (boosterMode) setBoosterMode(false)
+    else { setBoosterMode(true); setShowBooster(true) }
+  }
+
   const cat = CATS.find((c) => c.key === activeCategory)!
-  const list = showFavorites ? mods.filter((m) => m.favorite) : mods.filter((m) => m.category === activeCategory)
+  // في وضع البوستر نعرض مودّاته الخاصة فقط
+  const visible = boosterMode ? mods.filter((m) => m.personal) : mods.filter((m) => !m.personal)
+  const list = showFavorites
+    ? visible.filter((m) => m.favorite)
+    : visible.filter((m) => m.category === activeCategory)
 
   return (
     <I18nContext.Provider value={i18n}>
-      <div className="app" dir={dir}>
+      <div className={`app ${boosterMode ? 'booster' : ''}`} dir={dir}>
         <TitleBar />
-        <Header gtaValid={gtaValid} fivemValid={fivemValid} isAdmin={isAdmin} onOpenAdmin={() => setShowAdmin(true)} onSecretOpen={secretTap} onOpenSettings={() => setShowSettings(true)} onRefresh={refresh} refreshing={refreshing} />
+        <Header gtaValid={gtaValid} fivemValid={fivemValid} isAdmin={isAdmin} onOpenAdmin={() => setShowAdmin(true)} onSecretOpen={secretTap} boosterMode={boosterMode} onBooster={onBoosterClick} onOpenSettings={() => setShowSettings(true)} onRefresh={refresh} refreshing={refreshing} />
         <main className="main-content">
           <nav className="category-switcher">
             <div className="categories-left">
               {CATS.map((c) => (
                 <button key={c.key} className={activeCategory === c.key && !showFavorites ? 'selected' : ''} onClick={() => { setActiveCategory(c.key); setShowFavorites(false) }}>
-                  {c.icon} {c.name}<span>{mods.filter((m) => m.category === c.key).length}</span>
+                  {c.icon} {c.name}<span>{visible.filter((m) => m.category === c.key).length}</span>
                 </button>
               ))}
             </div>
             <button className={`favorites-btn ${showFavorites ? 'active' : ''}`} onClick={() => { setShowFavorites(!showFavorites); setActiveCategory('graphics') }}>
-              ★ {t('favorites')}<span>{mods.filter((m) => m.favorite).length}</span>
+              ★ {t('favorites')}<span>{visible.filter((m) => m.favorite).length}</span>
             </button>
           </nav>
           <section className="content-heading" key={`${showFavorites ? 'fav' : activeCategory}-${i18n.lang}`}>
@@ -175,6 +198,14 @@ export default function App(): React.JSX.Element {
           )}
         </main>
         {showAdmin && <AdminPanel onClose={() => setShowAdmin(false)} onReload={loadMods} onAdminChange={setIsAdmin} />}
+        {showBooster && (
+          <BoosterPanel
+            isBooster={isBooster}
+            onClose={() => setShowBooster(false)}
+            onVerified={() => { setIsBooster(true); setBoosterMode(true) }}
+            onReload={loadMods}
+          />
+        )}
         {showSettings && <SettingsPanel settings={settings} onSave={save} onClose={() => setShowSettings(false)} />}
         {editingMod && <EditModal mod={editingMod} onClose={() => setEditingMod(null)} onSave={handleSaveEdit} />}
         {updateVersion && <UpdateBanner version={updateVersion} onDismiss={() => setUpdateVersion(null)} />}

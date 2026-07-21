@@ -12,7 +12,7 @@ export default function TitleBar(): React.JSX.Element {
 
   return (
     <div className="titlebar">
-      <span className="titlebar-title">Dev by Tik @le_o</span>
+      <span className="titlebar-title">Tik @le_o | Dis.gg/k71</span>
       <div className="titlebar-controls">
         <button className="tb-btn" onClick={() => window.api.windowMinimize()} title="تصغير" aria-label="Minimize">
           <svg width="11" height="11" viewBox="0 0 11 11"><rect x="1" y="5" width="9" height="1" fill="currentColor" /></svg>
