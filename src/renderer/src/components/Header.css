@@ -21,6 +21,9 @@
   flex-direction: column;
   gap: 1px;
   user-select: none;
+  /* لازم no-drag عشان النقر السري (٥ نقرات) يشتغل */
+  -webkit-app-region: no-drag;
+  cursor: default;
 }
 
 .wordmark {

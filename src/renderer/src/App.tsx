@@ -7,6 +7,7 @@ import SettingsPanel from './components/SettingsPanel'
 import EditModal from './components/EditModal'
 import AdminPanel from './components/AdminPanel'
 import UpdateBanner from './components/UpdateBanner'
+import TitleBar from './components/TitleBar'
 import './App.css'
 
 // أسماء التصنيفات دائماً بالإنجليزي (موحّدة)، وباقي الكلام يتبع اللغة المختارة
@@ -136,6 +137,7 @@ export default function App(): React.JSX.Element {
   return (
     <I18nContext.Provider value={i18n}>
       <div className="app" dir={dir}>
+        <TitleBar />
         <Header gtaValid={gtaValid} fivemValid={fivemValid} isAdmin={isAdmin} onOpenAdmin={() => setShowAdmin(true)} onSecretOpen={secretTap} onOpenSettings={() => setShowSettings(true)} onRefresh={refresh} refreshing={refreshing} />
         <main className="main-content">
           <nav className="category-switcher">

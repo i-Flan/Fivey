@@ -32,7 +32,16 @@ const api = {
     ipcRenderer.on('update-ready', listener)
     return () => ipcRenderer.removeListener('update-ready', listener)
   },
-  installUpdateNow: () => ipcRenderer.invoke('install-update-now')
+  installUpdateNow: () => ipcRenderer.invoke('install-update-now'),
+  // أزرار التحكم بالنافذة
+  windowMinimize: () => ipcRenderer.invoke('window-minimize'),
+  windowMaximize: () => ipcRenderer.invoke('window-maximize'),
+  windowClose: () => ipcRenderer.invoke('window-close'),
+  onWindowMaximized: (callback: (maximized: boolean) => void) => {
+    const listener = (_event: unknown, maximized: boolean): void => callback(maximized)
+    ipcRenderer.on('window-maximized', listener)
+    return () => ipcRenderer.removeListener('window-maximized', listener)
+  }
 }
 
 if (process.contextIsolated) {

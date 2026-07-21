@@ -83,6 +83,9 @@ function createWindow(): void {
     minHeight: 600,
     show: false,
     autoHideMenuBar: true,
+    // بدون شريط ويندوز — أزرار التحكم مدمجة داخل التطبيق (TitleBar)
+    frame: false,
+    backgroundColor: '#0b0b0d',
     title: 'Dev by Tik @le_o',
     icon: join(app.getAppPath(), 'build', 'icon.png'),
     webPreferences: {
@@ -100,6 +103,10 @@ function createWindow(): void {
       win.show()
     }, 1600)
   })
+
+  // نُعلم الواجهة بتغير حالة التكبير عشان تتغير أيقونة الزر
+  win.on('maximize', () => win.webContents.send('window-maximized', true))
+  win.on('unmaximize', () => win.webContents.send('window-maximized', false))
 
   win.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
@@ -191,6 +198,16 @@ function setupIpc(): void {
 
   ipcMain.handle('get-mods-dir', () => {
     return getModsDirectory()
+  })
+
+  // أزرار التحكم بالنافذة (شريط العنوان المخصص داخل التطبيق)
+  ipcMain.handle('window-minimize', () => mainWindow?.minimize())
+  ipcMain.handle('window-close', () => mainWindow?.close())
+  ipcMain.handle('window-maximize', () => {
+    if (!mainWindow) return false
+    if (mainWindow.isMaximized()) mainWindow.unmaximize()
+    else mainWindow.maximize()
+    return mainWindow.isMaximized()
   })
 
   // "حدّث الآن": يغلق البرنامج ويثبّت النسخة الجديدة فوراً ثم يعيد فتحه

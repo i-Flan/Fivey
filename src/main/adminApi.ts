@@ -88,14 +88,51 @@ async function deleteAssetById(id: number, token: string): Promise<void> {
   await fetch(`${API}/releases/assets/${id}`, { method: 'DELETE', headers: authHeaders(token) })
 }
 
+const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
+
+// رفع مرفق مع إعادة المحاولة — سيرفر GitHub أحياناً يرجّع 502/503 مؤقتاً.
+// قبل كل إعادة نحذف أي بقايا مرفق بنفس الاسم عشان ما يتعارض.
 async function uploadAsset(releaseId: number, name: string, filePath: string, contentType: string, token: string): Promise<void> {
   const body = readFileSync(filePath)
-  const res = await fetch(`${UPLOADS}/releases/${releaseId}/assets?name=${encodeURIComponent(name)}`, {
-    method: 'POST',
-    headers: { ...authHeaders(token), 'Content-Type': contentType },
-    body
-  })
-  if (!res.ok) throw new Error(`upload ${name} failed (${res.status})`)
+  const attempts = 4
+  let lastStatus = 0
+
+  for (let i = 0; i < attempts; i++) {
+    if (i > 0) {
+      await sleep(1500 * i)
+      try {
+        const rel = await getReleaseById(releaseId, token)
+        const stale = rel?.assets.find((a) => a.name === name)
+        if (stale) await deleteAssetById(stale.id, token)
+      } catch {
+        // نكمّل المحاولة حتى لو فشل التنظيف
+      }
+    }
+    try {
+      const res = await fetch(`${UPLOADS}/releases/${releaseId}/assets?name=${encodeURIComponent(name)}`, {
+        method: 'POST',
+        headers: { ...authHeaders(token), 'Content-Type': contentType, 'Content-Length': String(body.length) },
+        body
+      })
+      if (res.ok) return
+      lastStatus = res.status
+      // أخطاء المستخدم (٤xx عدا 429) ما تنفع معها إعادة المحاولة
+      if (res.status < 500 && res.status !== 429) break
+    } catch {
+      lastStatus = 0 // انقطاع شبكة — نعيد المحاولة
+    }
+  }
+  throw new Error(`upload ${name} failed (${lastStatus || 'network'}) بعد ${attempts} محاولات`)
+}
+
+async function getReleaseById(id: number, token: string): Promise<Release | null> {
+  try {
+    const res = await fetch(`${API}/releases/${id}`, { headers: authHeaders(token) })
+    if (!res.ok) return null
+    return (await res.json()) as Release
+  } catch {
+    return null
+  }
 }
 
 async function putCatalog(release: Release, mods: CatalogEntry[], token: string): Promise<void> {

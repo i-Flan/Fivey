@@ -60,6 +60,10 @@ interface API {
   }) => Promise<{ success: boolean; error?: string }>
   onUpdateReady: (callback: (data: { version: string }) => void) => () => void
   installUpdateNow: () => Promise<{ success: boolean }>
+  windowMinimize: () => Promise<void>
+  windowMaximize: () => Promise<boolean>
+  windowClose: () => Promise<void>
+  onWindowMaximized: (callback: (maximized: boolean) => void) => () => void
 }
 
 declare global {
