@@ -2,6 +2,7 @@ node_modules/
 out/
 dist/
 *.log
+*.tsbuildinfo
 
 # مجلد المودات ضخم (1GB+) — لا يُرفع على GitHub إطلاقاً.
 # يبقى محلياً على جهازك، ويُوزّع لاحقاً عبر Releases (المرحلة 2).
