@@ -26,6 +26,8 @@ function getDestination(category: ModCategory, source: string): string {
   if (category === 'bloodfx') return source.toLowerCase().endsWith('.dat') ? `fivem-effects/${name}` : `fivem-mods/${name}`
   if (source.toLowerCase().startsWith('citizen/')) return `fivem/${source}`
   if (name.toLowerCase() === 'reshade.ini') return 'fivem/ReShade.ini'
+  // مرفقات الجرافكس بصيغة rpf تُركّب في مجلد mods داخل FiveM
+  if (name.toLowerCase().endsWith('.rpf')) return `fivem-mods/${name}`
   return `fivem/citizen/common/data/${name}`
 }
 function target(category: ModCategory): 'fivem' | 'gta' | 'both' { return category === 'audio' ? 'gta' : category === 'graphics' ? 'fivem' : 'both' }

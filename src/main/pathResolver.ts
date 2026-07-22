@@ -46,7 +46,8 @@ export function resolveDestination(
     return join('C:\\Program Files\\Rockstar Games\\Grand Theft Auto V Legacy\\x64\\audio\\sfx', destination.slice(6))
   }
   if (destination.startsWith('fivem-effects/')) return join(settings.fivemPath, 'citizen', 'common', 'data', 'effects', destination.slice(14))
-  if (destination.startsWith('fivem-mods/')) return join(settings.fivemPath, 'mods', destination.slice(12))
+  // ملاحظة: طول 'fivem-mods/' = 11 (كان يُقص 12 فيضيع أول حرف من اسم الملف)
+  if (destination.startsWith('fivem-mods/')) return join(settings.fivemPath, 'mods', destination.slice(11))
   if (destination.startsWith('fivem/')) {
     return join(settings.fivemPath, destination.slice(6))
   }
