@@ -42,9 +42,21 @@ export async function buildModCatalog(): Promise<ModManifest[]> {
   const local = scanAllMods(modsDir)
   const remote = await fetchRemoteCatalog()
 
-  // أوفلاين (فشل الجلب): اعرض المودات المحمّلة محلياً فقط حتى يبقى البرنامج قابلاً للاستخدام
+  // أوفلاين (فشل الجلب): اعرض المودات المحمّلة محلياً فقط حتى يبقى البرنامج قابلاً للاستخدام.
+  // نعلّم المودات الخاصة بالبوستر هنا أيضاً، وإلا ظهرت في العرض العادي واختفت من وضع البوستر.
   if (remote === null) {
-    return local.map((m) => ({ ...m, folderName: getModFolderName(m), downloaded: true }))
+    const personal = new Map(listPersonalMods().map((p) => [p.id, p]))
+    return local.map((m) => {
+      const p = personal.get(m.id)
+      return {
+        ...m,
+        nameAr: p?.nameAr || m.nameAr,
+        preview: p?.image ?? m.preview,
+        folderName: p?.folderName || getModFolderName(m),
+        downloaded: true,
+        personal: !!p
+      }
+    })
   }
 
   // القائمة المركزية هي المصدر الرسمي: أي مود يُحذف منها يختفي عند الجميع

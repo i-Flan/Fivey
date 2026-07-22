@@ -44,7 +44,9 @@ export default function AdminPanel({ onClose, onReload, onAdminChange }: Props):
   const [eVideo, setEVideo] = useState('')
 
   const reload = async (): Promise<void> => {
-    setList(await window.api.refreshMods())
+    // المودات الخاصة بالبوستر محلية فقط ومو في القائمة المركزية،
+    // فلا تُعرض هنا (تعديلها/حذفها/نشرها عبر GitHub يفشل).
+    setList((await window.api.refreshMods()).filter((m) => !m.personal))
     onReload()
   }
 

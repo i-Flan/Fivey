@@ -245,6 +245,16 @@ function setupIpc(): void {
 
   ipcMain.handle('booster-delete-mod', (_event, id: string) => {
     if (!getBoosterState().isBooster) return { success: false, error: 'هذي الميزة للبوسترز فقط' }
+    // لو المود مفعّل، نلغي تفعيله أولاً وإلا بقيت ملفاته داخل اللعبة بعد الحذف
+    try {
+      const state = loadState()
+      const mod = loadModCatalog().find((m) => m.id === id)
+      if (mod && state.activeMods[mod.category] === id) {
+        deactivateMod(mod, state.settings, state)
+      }
+    } catch {
+      // نكمّل الحذف حتى لو فشل إلغاء التفعيل
+    }
     return deletePersonalMod(id)
   })
 
