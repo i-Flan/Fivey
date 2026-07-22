@@ -138,8 +138,15 @@ export async function announceMod(mod: PublishMod): Promise<{ success: boolean; 
     return { success: false, error: `ما فيه رابط لتصنيف "${mod.category}" داخل webhooks.json` }
   }
 
-  const form = new FormData()
-  let fileIndex = 0
+  // نجمع المرفقات في مصفوفة، ونعيد بناء FormData في كل إرسال (أنظف وأأمن نوعياً)
+  const attachments: { field: string; blob: Blob; name: string }[] = []
+  const addAttachment = (buf: Buffer, name: string): void => {
+    attachments.push({
+      field: `files[${attachments.length}]`,
+      blob: new Blob([new Uint8Array(buf)], { type: 'image/png' }),
+      name
+    })
+  }
 
   const catLabel = CAT_LABEL[mod.category]
   // وصف بسيط بثلاثة أسطر: اسم المود (من البرنامج) + الحصرية + رابط التحميل
@@ -161,8 +168,7 @@ export async function announceMod(mod: PublishMod): Promise<{ success: boolean; 
   try {
     const ic = iconPath()
     if (existsSync(ic)) {
-      form.append(`files[${fileIndex}]`, new Blob([readFileSync(ic)], { type: 'image/png' }), 'fivey.png')
-      fileIndex++
+      addAttachment(readFileSync(ic), 'fivey.png')
       hasIcon = true
     }
   } catch {
@@ -176,10 +182,8 @@ export async function announceMod(mod: PublishMod): Promise<{ success: boolean; 
   // صورة المود ← بانر عريض أنيق (image كبير لكن بنسبة مرتّبة)
   const src = await getSourceImage(mod.preview)
   if (src) {
-    const banner = makeBanner(src)
-    form.append(`files[${fileIndex}]`, new Blob([banner], { type: 'image/png' }), 'banner.png')
+    addAttachment(makeBanner(src), 'banner.png')
     embed.image = { url: 'attachment://banner.png' }
-    fileIndex++
   }
 
   // زر رابط حقيقي (لو الروم يدعمه). لو رفضه ديسكورد نعيد الإرسال بدون أزرار.
@@ -190,7 +194,7 @@ export async function announceMod(mod: PublishMod): Promise<{ success: boolean; 
 
   const send = async (withButton: boolean): Promise<Response> => {
     const body = new FormData()
-    for (const [k, v] of form.entries()) body.append(k, v as string | Blob)
+    for (const a of attachments) body.append(a.field, a.blob, a.name)
     body.append(
       'payload_json',
       JSON.stringify({ username: 'Fivey', embeds: [embed], components: withButton ? [linkButton] : [] })

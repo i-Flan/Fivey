@@ -3,7 +3,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { loadModCatalog, buildModCatalog, getModsDirectory, initModsDirectory } from './modCatalog'
 import { downloadAndInstall } from './modDownloader'
-import { getAdminToken, setAdminToken, verifyToken, adminAddMod, adminEditMod, adminDeleteMod, adminUploadSound } from './adminApi'
+import { getAdminToken, setAdminToken, verifyToken, adminAddMod, adminEditMod, adminDeleteMod, adminUploadSound, adminUploadMedia } from './adminApi'
 import type { ModCategory } from '../shared/types'
 import {
   loadState,
@@ -361,6 +361,25 @@ function setupIpc(): void {
     const token = getAdminToken()
     if (!token) return { success: false, error: 'لا يوجد مفتاح مدير' }
     return adminUploadSound(id, filePath, token)
+  })
+
+  // اختيار صورة أو فيديو معاينة (للجرافكس/البلود/الكيل)
+  ipcMain.handle('admin-pick-media', async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ['openFile'],
+      title: 'اختر صورة أو فيديو المعاينة',
+      filters: [
+        { name: 'Image or Video', extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif', 'mp4', 'webm', 'mov'] }
+      ]
+    })
+    if (result.canceled || result.filePaths.length === 0) return null
+    return result.filePaths[0]
+  })
+
+  ipcMain.handle('admin-upload-media', async (_event, id: string, filePath: string) => {
+    const token = getAdminToken()
+    if (!token) return { success: false, error: 'لا يوجد مفتاح مدير' }
+    return adminUploadMedia(id, filePath, token)
   })
 
   ipcMain.handle(

@@ -250,6 +250,62 @@ export async function adminUploadSound(
   }
 }
 
+// أنواع الصور/الفيديو المدعومة لمعاينة الجرافكس/البلود/الكيل
+const IMAGE_MIME: Record<string, string> = {
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
+  '.gif': 'image/gif'
+}
+const VIDEO_MIME: Record<string, string> = {
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.mov': 'video/quicktime'
+}
+
+// يرفع صورة أو فيديو معاينة من جهاز المدير، ويضبطه في الحقل المناسب
+export async function adminUploadMedia(
+  id: string,
+  filePath: string,
+  token: string
+): Promise<{ success: boolean; url?: string; kind?: 'image' | 'video'; error?: string }> {
+  try {
+    if (!existsSync(filePath)) return { success: false, error: 'الملف غير موجود' }
+    const ext = extname(filePath).toLowerCase()
+    const isImage = !!IMAGE_MIME[ext]
+    const isVideo = !!VIDEO_MIME[ext]
+    if (!isImage && !isVideo) {
+      return { success: false, error: 'صيغة غير مدعومة (صورة: png/jpg/webp/gif — فيديو: mp4/webm/mov)' }
+    }
+    const mime = isImage ? IMAGE_MIME[ext] : VIDEO_MIME[ext]
+
+    let release = await getOrCreateRelease(token)
+    const mods = await getCatalogMods(release)
+    const m = mods.find((x) => x.id === id)
+    if (!m) return { success: false, error: 'المود غير موجود' }
+
+    const assetName = `${m.folderName}-${isImage ? 'cover' : 'video'}${ext}`
+    const old = release.assets.find((a) => a.name === assetName)
+    if (old) await deleteAssetById(old.id, token)
+
+    await uploadAsset(release.id, assetName, filePath, mime, token)
+
+    const url = `https://github.com/${CONTENT_OWNER}/${CONTENT_REPO}/releases/download/${CONTENT_TAG}/${assetName}`
+    release = await getOrCreateRelease(token)
+    const fresh = await getCatalogMods(release)
+    const target = fresh.find((x) => x.id === id)
+    if (target) {
+      if (isImage) target.preview = url
+      else target.videoPreview = url
+    }
+    await putCatalog(release, fresh, token)
+    return { success: true, url, kind: isImage ? 'image' : 'video' }
+  } catch (err) {
+    return { success: false, error: (err as Error)?.message || 'فشل رفع الملف' }
+  }
+}
+
 export async function adminEditMod(id: string, fields: Partial<CatalogEntry>, token: string): Promise<{ success: boolean; error?: string }> {
   try {
     const release = await getOrCreateRelease(token)

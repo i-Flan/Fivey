@@ -5,7 +5,8 @@ import {
   unlinkSync,
   readFileSync,
   writeFileSync,
-  rmSync
+  rmSync,
+  chmodSync
 } from 'fs'
 import { join, dirname } from 'path'
 import { app } from 'electron'
@@ -96,6 +97,12 @@ function backupFile(filePath: string, modId: string): void {
 
 function deletePath(filePath: string): void {
   if (!existsSync(filePath)) return
+  // ملفات اللعبة غالباً "للقراءة فقط" — نشيل الخاصية قبل الحذف
+  try {
+    chmodSync(filePath, 0o666)
+  } catch {
+    // ignore
+  }
   try {
     unlinkSync(filePath)
   } catch {
@@ -140,7 +147,21 @@ function installModFiles(
       deletePath(dest)
     }
 
-    copyFileSync(src, dest)
+    try {
+      copyFileSync(src, dest)
+    } catch (err) {
+      const e = err as NodeJS.ErrnoException
+      // خطأ صلاحيات/ملف مقفول — رسالة واضحة بدل الانهيار
+      if (e.code === 'EPERM' || e.code === 'EACCES' || e.code === 'EBUSY') {
+        return {
+          success: false,
+          error:
+            'ما قدرنا نكتب في مجلد اللعبة. سكّر GTA و Rockstar Launcher تماماً، وشغّل البرنامج كمسؤول (كليك يمين ← Run as administrator).',
+          installed
+        }
+      }
+      throw err
+    }
     installed.push(dest)
   }
 

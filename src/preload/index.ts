@@ -28,6 +28,8 @@ const api = {
   adminPublishMod: (mod: unknown) => ipcRenderer.invoke('admin-publish-mod', mod),
   adminPickAudio: () => ipcRenderer.invoke('admin-pick-audio'),
   adminUploadSound: (id: string, filePath: string) => ipcRenderer.invoke('admin-upload-sound', id, filePath),
+  adminPickMedia: () => ipcRenderer.invoke('admin-pick-media'),
+  adminUploadMedia: (id: string, filePath: string) => ipcRenderer.invoke('admin-upload-media', id, filePath),
   adminGetWebhooks: () => ipcRenderer.invoke('admin-get-webhooks'),
   adminSetWebhooks: (hooks: unknown) => ipcRenderer.invoke('admin-set-webhooks', hooks),
   // التحديث داخل البرنامج

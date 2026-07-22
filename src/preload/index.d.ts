@@ -51,6 +51,11 @@ interface API {
     id: string,
     filePath: string
   ) => Promise<{ success: boolean; url?: string; error?: string }>
+  adminPickMedia: () => Promise<string | null>
+  adminUploadMedia: (
+    id: string,
+    filePath: string
+  ) => Promise<{ success: boolean; url?: string; kind?: 'image' | 'video'; error?: string }>
   adminEditMod: (
     id: string,
     fields: { nameAr?: string; descriptionAr?: string; preview?: string; soundPreview?: string; videoPreview?: string }

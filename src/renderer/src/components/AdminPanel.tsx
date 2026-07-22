@@ -34,6 +34,7 @@ export default function AdminPanel({ onClose, onReload, onAdminChange }: Props):
   const [aName, setAName] = useState('')
   const [aDesc, setADesc] = useState('')
   const [aSound, setASound] = useState('')
+  const [aMedia, setAMedia] = useState('') // صورة/فيديو للجرافكس والبلود والكيل
 
   const [eId, setEId] = useState('')
   const [eName, setEName] = useState('')
@@ -83,9 +84,14 @@ export default function AdminPanel({ onClose, onReload, onAdminChange }: Props):
     setBusy(true)
     setMsg('جارٍ الضغط والرفع... (قد يأخذ وقت حسب الحجم)')
     const r = await window.api.adminAddMod({ folderPath: aFolder, category: aCat, folderName: aSlug, nameAr: aName, descriptionAr: aDesc })
-    if (r.success && aSound && r.id) {
-      setMsg('جارٍ رفع مقطع الصوت...')
-      await window.api.adminUploadSound(r.id, aSound)
+    if (r.success && r.id) {
+      if (aCat === 'audio' && aSound) {
+        setMsg('جارٍ رفع مقطع الصوت...')
+        await window.api.adminUploadSound(r.id, aSound)
+      } else if (aCat !== 'audio' && aMedia) {
+        setMsg('جارٍ رفع المعاينة...')
+        await window.api.adminUploadMedia(r.id, aMedia)
+      }
     }
     setBusy(false)
     if (r.success) {
@@ -95,6 +101,7 @@ export default function AdminPanel({ onClose, onReload, onAdminChange }: Props):
       setAName('')
       setADesc('')
       setASound('')
+      setAMedia('')
       setMsg('')
       await reload()
     } else setMsg(r.error || 'فشل الرفع')
@@ -136,6 +143,22 @@ export default function AdminPanel({ onClose, onReload, onAdminChange }: Props):
       setMsg('')
       await reload()
     } else setMsg(r.error || 'فشل رفع الصوت')
+  }
+
+  // رفع صورة/فيديو من الجهاز للمود المفتوح في وضع التعديل
+  const pickAndUploadMedia = async (): Promise<void> => {
+    const p = await window.api.adminPickMedia()
+    if (!p) return
+    setBusy(true)
+    setMsg('جارٍ رفع المعاينة...')
+    const r = await window.api.adminUploadMedia(eId, p)
+    setBusy(false)
+    if (r.success && r.url) {
+      if (r.kind === 'video') setEVideo(r.url)
+      else setEPreview(r.url)
+      setMsg('')
+      await reload()
+    } else setMsg(r.error || 'فشل الرفع')
   }
 
   const openHooks = async (): Promise<void> => {
@@ -224,11 +247,23 @@ export default function AdminPanel({ onClose, onReload, onAdminChange }: Props):
             <input className="admin-input" value={aName} onChange={(e) => setAName(e.target.value)} placeholder="جرافكس ناف" />
             <label className="admin-label">الوصف (اختياري)</label>
             <input className="admin-input" value={aDesc} onChange={(e) => setADesc(e.target.value)} />
-            <label className="admin-label">مقطع صوت المعاينة (اختياري)</label>
-            <div className="admin-row">
-              <input className="admin-input" value={aSound} readOnly dir="ltr" placeholder="اختر ملف صوت من جهازك" />
-              <button className="admin-btn" onClick={async () => { const p = await window.api.adminPickAudio(); if (p) setASound(p) }}>🎵 اختر</button>
-            </div>
+            {aCat === 'audio' ? (
+              <>
+                <label className="admin-label">مقطع صوت المعاينة (اختياري)</label>
+                <div className="admin-row">
+                  <input className="admin-input" value={aSound} readOnly dir="ltr" placeholder="اختر ملف صوت من جهازك" />
+                  <button className="admin-btn" onClick={async () => { const p = await window.api.adminPickAudio(); if (p) setASound(p) }}>🎵 اختر</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <label className="admin-label">صورة أو فيديو المعاينة (اختياري)</label>
+                <div className="admin-row">
+                  <input className="admin-input" value={aMedia} readOnly dir="ltr" placeholder="اختر صورة أو فيديو من جهازك" />
+                  <button className="admin-btn" onClick={async () => { const p = await window.api.adminPickMedia(); if (p) setAMedia(p) }}>🖼️ اختر</button>
+                </div>
+              </>
+            )}
             {msg && <p className="admin-msg">{msg}</p>}
             <div className="admin-row admin-actions">
               <button className="admin-btn" onClick={() => { setMode('list'); setMsg('') }}>رجوع</button>
@@ -266,8 +301,11 @@ export default function AdminPanel({ onClose, onReload, onAdminChange }: Props):
             <input className="admin-input" value={eName} onChange={(e) => setEName(e.target.value)} />
             <label className="admin-label">الوصف</label>
             <input className="admin-input" value={eDesc} onChange={(e) => setEDesc(e.target.value)} />
-            <label className="admin-label">رابط صورة الغلاف (اختياري)</label>
-            <input className="admin-input" value={ePreview} onChange={(e) => setEPreview(e.target.value)} dir="ltr" placeholder="https://..." />
+            <label className="admin-label">صورة الغلاف (اختياري)</label>
+            <div className="admin-row">
+              <input className="admin-input" value={ePreview} onChange={(e) => setEPreview(e.target.value)} dir="ltr" placeholder="https://... أو ارفع من جهازك" />
+              <button className="admin-btn" disabled={busy} onClick={pickAndUploadMedia}>🖼️ رفع صورة/فيديو</button>
+            </div>
             <label className="admin-label">مقطع صوت المعاينة (اختياري)</label>
             <div className="admin-row">
               <input className="admin-input" value={eSound} onChange={(e) => setESound(e.target.value)} dir="ltr" placeholder="https://... أو ارفع من جهازك" />
