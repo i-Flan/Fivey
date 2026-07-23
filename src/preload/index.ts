@@ -25,6 +25,7 @@ const api = {
   adminAddMod: (input: unknown) => ipcRenderer.invoke('admin-add-mod', input),
   adminEditMod: (id: string, fields: unknown) => ipcRenderer.invoke('admin-edit-mod', id, fields),
   adminDeleteMod: (id: string) => ipcRenderer.invoke('admin-delete-mod', id),
+  adminSetBooster: (id: string, value: boolean) => ipcRenderer.invoke('admin-set-booster', id, value),
   adminPublishMod: (mod: unknown) => ipcRenderer.invoke('admin-publish-mod', mod),
   adminPickAudio: () => ipcRenderer.invoke('admin-pick-audio'),
   adminUploadSound: (id: string, filePath: string) => ipcRenderer.invoke('admin-upload-sound', id, filePath),

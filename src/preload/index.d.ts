@@ -61,6 +61,7 @@ interface API {
     fields: { nameAr?: string; descriptionAr?: string; preview?: string; soundPreview?: string; videoPreview?: string }
   ) => Promise<{ success: boolean; error?: string }>
   adminDeleteMod: (id: string) => Promise<{ success: boolean; error?: string }>
+  adminSetBooster: (id: string, value: boolean) => Promise<{ success: boolean; error?: string }>
   adminPublishMod: (mod: {
     id: string
     category: string

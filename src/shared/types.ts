@@ -27,6 +27,8 @@ export interface ModManifest {
   downloaded?: boolean
   // مود خاص بالبوستر — محلي على جهازه فقط
   personal?: boolean
+  // مود حصري للبوسترز (يعلّمه المدير) — بنفسجي، مثبّت فوق، مقفول إلا بالتحقق
+  booster?: boolean
 }
 
 // عنصر في ملف القائمة المركزي catalog.json
@@ -42,6 +44,7 @@ export interface RemoteMod {
   preview?: string
   soundPreview?: string
   videoPreview?: string
+  booster?: boolean
 }
 
 export interface DownloadProgress {

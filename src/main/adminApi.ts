@@ -19,6 +19,7 @@ interface CatalogEntry {
   preview?: string
   soundPreview?: string
   videoPreview?: string
+  booster?: boolean
 }
 interface Release { id: number; assets: { id: number; name: string; browser_download_url: string }[] }
 
@@ -361,6 +362,21 @@ export async function adminEditMod(id: string, fields: Partial<CatalogEntry>, to
     }
     if (fields.soundPreview !== undefined) m.soundPreview = fields.soundPreview || undefined
     if (fields.videoPreview !== undefined) m.videoPreview = fields.videoPreview || undefined
+    await putCatalog(release, mods, token)
+    return { success: true }
+  } catch (err) {
+    return { success: false, error: (err as Error)?.message || 'فشل التعديل' }
+  }
+}
+
+// يعلّم/يلغي مود كحصري للبوسترز في القائمة المركزية
+export async function adminSetBooster(id: string, value: boolean, token: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const release = await getOrCreateRelease(token)
+    const mods = await getCatalogMods(release)
+    const m = mods.find((x) => x.id === id)
+    if (!m) return { success: false, error: 'المود غير موجود' }
+    m.booster = value || undefined
     await putCatalog(release, mods, token)
     return { success: true }
   } catch (err) {

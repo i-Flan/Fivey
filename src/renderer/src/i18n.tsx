@@ -68,7 +68,13 @@ export const translations: Record<Lang, Record<string, string>> = {
     updateBody: 'نزّلنا نسخة جديدة من Fivey. تبي تحدّث الآن؟',
     updateNow: 'حدّث الآن',
     updateLater: 'لاحقاً',
-    updateLaterHint: 'بيتحدّث تلقائياً لما تسكّر البرنامج'
+    updateLaterHint: 'بيتحدّث تلقائياً لما تسكّر البرنامج',
+
+    filterAll: 'الكل',
+    filterBooster: 'بوستر',
+    filterFree: 'مجاني',
+    boosterLocked: '💎 حصري للبوسترز — تحقّق',
+    boosterActivate: '💎 تفعيل (بوستر)'
   },
   en: {
     headerSubtitle: 'Mod Manager',
@@ -134,7 +140,13 @@ export const translations: Record<Lang, Record<string, string>> = {
     updateBody: 'A new version of Fivey has been downloaded. Update now?',
     updateNow: 'Update now',
     updateLater: 'Later',
-    updateLaterHint: 'It will install automatically when you close the app'
+    updateLaterHint: 'It will install automatically when you close the app',
+
+    filterAll: 'All',
+    filterBooster: 'Booster',
+    filterFree: 'Free',
+    boosterLocked: '💎 Booster only — verify',
+    boosterActivate: '💎 Activate (Booster)'
   }
 }
 

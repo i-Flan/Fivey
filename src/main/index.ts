@@ -3,7 +3,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { loadModCatalog, buildModCatalog, getModsDirectory, initModsDirectory } from './modCatalog'
 import { downloadAndInstall } from './modDownloader'
-import { getAdminToken, setAdminToken, verifyToken, adminAddMod, adminEditMod, adminDeleteMod, adminUploadSound, adminUploadMedia } from './adminApi'
+import { getAdminToken, setAdminToken, verifyToken, adminAddMod, adminEditMod, adminDeleteMod, adminUploadSound, adminUploadMedia, adminSetBooster } from './adminApi'
 import type { ModCategory } from '../shared/types'
 import {
   loadState,
@@ -423,6 +423,12 @@ function setupIpc(): void {
     const token = getAdminToken()
     if (!token) return { success: false, error: 'لا يوجد مفتاح مدير' }
     return adminDeleteMod(id, token)
+  })
+
+  ipcMain.handle('admin-set-booster', async (_event, id: string, value: boolean) => {
+    const token = getAdminToken()
+    if (!token) return { success: false, error: 'لا يوجد مفتاح مدير' }
+    return adminSetBooster(id, value, token)
   })
 
   // روابط النشر (Webhooks) — تُضبط من داخل لوحة الإدارة

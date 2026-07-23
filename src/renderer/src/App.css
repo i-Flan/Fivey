@@ -18,6 +18,18 @@
 .content-heading h2 { margin: 6px 0 7px; font-size: 27px; letter-spacing: -.01em; }
 .content-heading p:not(.eyebrow) { color: var(--text-secondary); font-size: 13px; }
 .mods-count { padding: 8px 14px; border-radius: 30px; background: var(--accent-glow); color: var(--accent-red); border: 1px solid var(--accent-glow); font-size: 12px; font-weight: 700; white-space: nowrap; transition: background .45s ease, border-color .45s ease, color .45s ease; }
+
+/* فلتر ٣ أزرار: بوستر (بنفسجي) — الكل — مجاني (أحمر)، مع امتزاج بينهم */
+.mod-filter { align-self: center; display: inline-flex; margin: 4px auto 0; padding: 4px; border-radius: 30px; background: linear-gradient(90deg, rgba(244,127,255,.12), rgba(255,255,255,.04) 50%, rgba(224,30,43,.12)); border: 1px solid var(--border); gap: 3px; }
+.mf-seg { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; border: 0; background: transparent; color: var(--text-secondary); font-family: inherit; font-size: 12px; font-weight: 800; padding: 8px 18px; border-radius: 26px; transition: all .22s ease; }
+.mf-seg span { padding: 1px 8px; border-radius: 12px; background: rgba(255,255,255,.09); font-size: 11px; }
+.mf-seg:hover { color: var(--text-primary); }
+.mf-lock { font-size: 11px; opacity: .8; }
+.mf-booster[data-on="true"] { color: #230b28; background: linear-gradient(135deg, #f47fff, #c94fd6); box-shadow: 0 4px 16px rgba(244,127,255,.4); }
+.mf-booster[data-on="true"] span { background: rgba(0,0,0,.22); }
+.mf-all[data-on="true"] { color: #fff; background: var(--steel-light); }
+.mf-free[data-on="true"] { color: #fff; background: linear-gradient(135deg, #e01e2b, #8f0f18); box-shadow: 0 4px 16px var(--accent-glow); }
+.mf-free[data-on="true"] span { background: rgba(0,0,0,.22); }
 .mods-grid { flex: 1; min-height: 0; overflow-y: auto; display: grid; align-content: start; grid-template-columns: repeat(auto-fill, minmax(265px, 1fr)); gap: 18px; padding: 24px 32px 36px; }
 .mods-grid > *:nth-child(1) { animation-delay: .02s; }
 .mods-grid > *:nth-child(2) { animation-delay: .06s; }

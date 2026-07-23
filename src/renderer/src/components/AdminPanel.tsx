@@ -211,6 +211,17 @@ export default function AdminPanel({ onClose, onReload, onAdminChange }: Props):
     } else setMsg(r.error || 'فشل النشر')
   }
 
+  const toggleBooster = async (m: ModManifest): Promise<void> => {
+    setBusy(true)
+    setMsg(m.booster ? 'جارٍ إلغاء البوستر...' : 'جارٍ التعليم كبوستر...')
+    const r = await window.api.adminSetBooster(m.id, !m.booster)
+    setBusy(false)
+    if (r.success) {
+      setMsg('')
+      await reload()
+    } else setMsg(r.error || 'فشل التعديل')
+  }
+
   const del = async (m: ModManifest): Promise<void> => {
     if (!window.confirm(`حذف "${m.nameAr}" نهائياً من عند الجميع؟`)) return
     setBusy(true)
@@ -223,9 +234,9 @@ export default function AdminPanel({ onClose, onReload, onAdminChange }: Props):
     } else setMsg(r.error || 'فشل الحذف')
   }
 
-  const filtered = list.filter(
-    (m) => m.category === cat && (m.nameAr.includes(q) || (m.folderName || '').toLowerCase().includes(q.toLowerCase()))
-  )
+  const filtered = list
+    .filter((m) => m.category === cat && (m.nameAr.includes(q) || (m.folderName || '').toLowerCase().includes(q.toLowerCase())))
+    .sort((a, b) => Number(!!b.booster) - Number(!!a.booster)) // مودات البوستر فوق
 
   return (
     <div className="admin-overlay" dir="rtl" onClick={onClose}>
@@ -358,6 +369,9 @@ export default function AdminPanel({ onClose, onReload, onAdminChange }: Props):
                     <span className="admin-item-slug">{m.folderName}</span>
                   </div>
                   <div className="admin-item-actions">
+                    <button className={`admin-btn small booster ${m.booster ? 'on' : ''}`} onClick={() => toggleBooster(m)} title="حصري للبوسترز">
+                      {m.booster ? '💎 بوستر ✓' : '💎 Booster'}
+                    </button>
                     <button className={`admin-btn small ${published.has(m.id) ? 'done' : 'publish'}`} onClick={() => publish(m)}>
                       {published.has(m.id) ? '✓ تم النشر' : '📢 نشر'}
                     </button>

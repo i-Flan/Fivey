@@ -40,6 +40,7 @@ export default function App(): React.JSX.Element {
   const [isBooster, setIsBooster] = useState(false)
   const [boosterMode, setBoosterMode] = useState(false)
   const [showBooster, setShowBooster] = useState(false)
+  const [modFilter, setModFilter] = useState<'all' | 'booster' | 'free'>('all')
 
   const i18n = makeI18n((settings.language as Lang) || 'ar')
   const { t, dir } = i18n
@@ -150,12 +151,26 @@ export default function App(): React.JSX.Element {
     else { setBoosterMode(true); setShowBooster(true) }
   }
 
+  // اختيار فلتر (الكل/بوستر/مجاني). فلتر البوستر مقفول إلا بالتحقق (مرة وحدة).
+  const chooseFilter = (f: 'all' | 'booster' | 'free'): void => {
+    if (f === 'booster' && !isBooster) { setShowBooster(true); return }
+    setModFilter(f)
+  }
+  // لو ضغط المستخدم على مود بوستر بدون تحقق، نفتح شاشة التحقق
+  const requireBoost = (): void => setShowBooster(true)
+
   const cat = CATS.find((c) => c.key === activeCategory)!
   // في وضع البوستر نعرض مودّاته الخاصة فقط
   const visible = boosterMode ? mods.filter((m) => m.personal) : mods.filter((m) => !m.personal)
-  const list = showFavorites
+  const inScope = showFavorites
     ? visible.filter((m) => m.favorite)
     : visible.filter((m) => m.category === activeCategory)
+  const boosterCount = inScope.filter((m) => m.booster).length
+  const freeCount = inScope.length - boosterCount
+  // نطبّق الفلتر، ثم نثبّت مودات البوستر فوق القائمة
+  const list = inScope
+    .filter((m) => (modFilter === 'booster' ? m.booster : modFilter === 'free' ? !m.booster : true))
+    .sort((a, b) => Number(!!b.booster) - Number(!!a.booster))
 
   return (
     <I18nContext.Provider value={i18n}>
@@ -183,10 +198,21 @@ export default function App(): React.JSX.Element {
             </div>
             <span className="mods-count">{list.length} {t('available')}</span>
           </section>
+          <div className="mod-filter" data-active={modFilter}>
+            <button className="mf-seg mf-booster" data-on={modFilter === 'booster'} onClick={() => chooseFilter('booster')}>
+              {!isBooster && <span className="mf-lock">🔒</span>}💎 {t('filterBooster')}<span>{boosterCount}</span>
+            </button>
+            <button className="mf-seg mf-all" data-on={modFilter === 'all'} onClick={() => chooseFilter('all')}>
+              {t('filterAll')}<span>{inScope.length}</span>
+            </button>
+            <button className="mf-seg mf-free" data-on={modFilter === 'free'} onClick={() => chooseFilter('free')}>
+              {t('filterFree')}<span>{freeCount}</span>
+            </button>
+          </div>
           {list.length ? (
             <div className="mods-grid">
               {list.map((mod) => (
-                <ModCard key={mod.id} mod={mod} isActive={activeMods[mod.category] === mod.id} loading={loadingId === mod.id} downloading={downloadingId === mod.id} progress={downloadProgress[mod.id] || 0} onActivate={activate} onDeactivate={deactivate} onDownload={download} onToggleFavorite={toggleFavorite} onEdit={handleEdit} />
+                <ModCard key={mod.id} mod={mod} isActive={activeMods[mod.category] === mod.id} loading={loadingId === mod.id} downloading={downloadingId === mod.id} progress={downloadProgress[mod.id] || 0} locked={!!mod.booster && !isBooster} onUnlock={requireBoost} onActivate={activate} onDeactivate={deactivate} onDownload={download} onToggleFavorite={toggleFavorite} onEdit={handleEdit} />
               ))}
             </div>
           ) : (
@@ -202,7 +228,7 @@ export default function App(): React.JSX.Element {
           <BoosterPanel
             isBooster={isBooster}
             onClose={() => setShowBooster(false)}
-            onVerified={() => { setIsBooster(true); setBoosterMode(true) }}
+            onVerified={() => setIsBooster(true)}
             onReload={loadMods}
           />
         )}

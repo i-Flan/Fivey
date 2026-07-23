@@ -83,6 +83,9 @@ select.admin-input { cursor: pointer; }
 .admin-btn.small { padding: 7px 11px; font-size: 12px; flex: 1; }
 .admin-btn.danger { color: var(--accent-red); border-color: #5a2830; background: #2a1418; }
 .admin-btn.danger:hover { background: #38191f; color: #fff; }
+.admin-btn.booster { color: #f47fff; border-color: #3f2a4a; background: #1b1222; }
+.admin-btn.booster:hover { background: #241630; color: #fff; }
+.admin-btn.booster.on { color: #230b28; background: linear-gradient(135deg, #f47fff, #c94fd6); border-color: #f9a3ff; }
 .admin-btn.publish { color: #4aa3ff; border-color: #1e3a52; background: #10202e; }
 .admin-btn.publish:hover { background: #16293a; color: #fff; }
 .admin-btn.done { color: #35c46b; border-color: #235637; background: #13271b; }

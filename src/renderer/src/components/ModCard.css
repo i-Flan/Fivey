@@ -15,6 +15,15 @@
 .test-sound-btn.loading:hover { transform: none; }
 .test-sound-btn.loading::before { content: ''; width: 13px; height: 13px; border: 2px solid #ffffff55; border-top-color: #fff; border-radius: 50%; animation: spin-sound .6s linear infinite; }
 @keyframes spin-sound { to { transform: rotate(360deg); } }
+/* مود بوستر: نغيّر متغيّرات التمييز داخل الكرت فقط فيصير كل شي بنفسجي تلقائياً */
+.mod-card.booster { --accent: #f47fff; --accent-deep: #c94fd6; --accent-red: #f9a3ff; --accent-glow: rgba(244, 127, 255, 0.32); border-color: rgba(244, 127, 255, 0.42); }
+.mod-card.booster:hover { border-color: #f47fff; box-shadow: 0 16px 32px #0007, 0 0 24px rgba(244, 127, 255, 0.28); }
+.mod-card.booster .mod-preview::after { background: radial-gradient(circle at 50%, rgba(244, 127, 255, 0.2), transparent 58%); }
+.mod-card.booster .active-badge { left: auto; right: 74px; }
+.booster-tag { position: absolute; top: 12px; left: 12px; z-index: 2; display: inline-flex; align-items: center; gap: 4px; border-radius: 20px; padding: 5px 10px; font-size: 10px; font-weight: 800; color: #230b28; background: linear-gradient(135deg, #f47fff, #c94fd6); box-shadow: 0 3px 10px rgba(244, 127, 255, 0.4); }
+.btn-booster-locked { flex: 1; color: #230b28; background: linear-gradient(135deg, #f47fff, #c94fd6); border-color: #f9a3ff; }
+.btn-booster-locked:hover { filter: brightness(1.08); box-shadow: 0 4px 16px rgba(244, 127, 255, 0.4); }
+
 .active-badge, .target-badge { position: absolute; top: 12px; z-index: 2; border-radius: 20px; padding: 5px 9px; font-size: 10px; font-weight: 700; }
 .active-badge { left: 12px; background: #17a06e; color: #fff; }
 .target-badge { right: 12px; color: var(--text-secondary); background: #202127; border: 1px solid var(--steel); direction: ltr; }

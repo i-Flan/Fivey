@@ -75,7 +75,8 @@ export async function buildModCatalog(): Promise<ModManifest[]> {
         folderName: r.folderName,
         downloadUrl: r.downloadUrl,
         size: r.size,
-        downloaded: true
+        downloaded: true,
+        booster: r.booster
       })
     } else {
       byId.set(r.id, {
@@ -94,7 +95,8 @@ export async function buildModCatalog(): Promise<ModManifest[]> {
         folderName: r.folderName,
         downloadUrl: r.downloadUrl,
         size: r.size,
-        downloaded: false
+        downloaded: false,
+        booster: r.booster
       })
     }
   }
