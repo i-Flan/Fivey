@@ -42,8 +42,11 @@ export function resolveDestination(
   destination: string,
   settings: AppSettings
 ): string {
+  // أصوات GTA: نستخدم مسار اللعبة الفعلي عند المستخدم (Steam/Epic/Rockstar).
+  // لو اللعبة خارج Program Files فلا حاجة لصلاحيات مدير إطلاقاً.
   if (destination.startsWith('audio/')) {
-    return join('C:\\Program Files\\Rockstar Games\\Grand Theft Auto V Legacy\\x64\\audio\\sfx', destination.slice(6))
+    const gtaBase = settings.gtaPath || COMMON_GTA_PATHS[0]
+    return join(gtaBase, 'x64', 'audio', 'sfx', destination.slice(6))
   }
   if (destination.startsWith('fivem-effects/')) return join(settings.fivemPath, 'citizen', 'common', 'data', 'effects', destination.slice(14))
   // ملاحظة: طول 'fivem-mods/' = 11 (كان يُقص 12 فيضيع أول حرف من اسم الملف)

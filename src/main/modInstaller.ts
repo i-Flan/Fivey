@@ -150,10 +150,13 @@ function installModFiles(
       const e = err as NodeJS.ErrnoException
       // خطأ صلاحيات/ملف مقفول — رسالة واضحة بدل الانهيار
       if (e.code === 'EPERM' || e.code === 'EACCES' || e.code === 'EBUSY') {
+        // مجلدات ويندوز المحمية هي وحدها التي تحتاج صلاحيات مدير
+        const protectedDir = /^[a-z]:\\program files/i.test(dest)
         return {
           success: false,
-          error:
-            'ما قدرنا نكتب في مجلد اللعبة. سكّر GTA و Rockstar Launcher تماماً، وشغّل البرنامج كمسؤول (كليك يمين ← Run as administrator).',
+          error: protectedDir
+            ? 'اللعبة مثبّتة داخل مجلد محمي من ويندوز. سكّر اللعبة و Rockstar Launcher، ثم شغّل البرنامج كمسؤول (كليك يمين ← Run as administrator).'
+            : 'ما قدرنا نكتب ملفات المود. تأكد إن اللعبة و Rockstar Launcher مسكّرين تماماً وحاول مرة ثانية.',
           installed
         }
       }
