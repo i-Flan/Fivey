@@ -197,8 +197,22 @@ export async function adminAddMod(input: AddModInput, token: string): Promise<{ 
     const downloadUrl = `https://github.com/${CONTENT_OWNER}/${CONTENT_REPO}/releases/download/${CONTENT_TAG}/${assetName}`
     release = await getOrCreateRelease(token)
     let mods = await getCatalogMods(release)
+    // عند إعادة رفع مود موجود نحافظ على الصورة والصوت والفيديو،
+    // وإلا انمسحت معاينته في كل مرة يُحدَّث فيها الملف.
+    const previous = mods.find((m) => m.id === id)
     mods = mods.filter((m) => m.id !== id)
-    mods.push({ id, category: input.category, folderName, nameAr: input.nameAr, descriptionAr: input.descriptionAr || '', downloadUrl, size })
+    mods.push({
+      id,
+      category: input.category,
+      folderName,
+      nameAr: input.nameAr,
+      descriptionAr: input.descriptionAr || previous?.descriptionAr || '',
+      downloadUrl,
+      size,
+      preview: previous?.preview,
+      soundPreview: previous?.soundPreview,
+      videoPreview: previous?.videoPreview
+    })
     await putCatalog(release, mods, token)
     return { success: true, id }
   } catch (err) {
@@ -331,8 +345,16 @@ export async function adminDeleteMod(id: string, token: string): Promise<{ succe
     const target = mods.find((x) => x.id === id)
     const remaining = mods.filter((x) => x.id !== id)
     if (target) {
-      const asset = release.assets.find((a) => a.name === `${target.folderName}.zip`)
-      if (asset) await deleteAssetById(asset.id, token)
+      // نحذف ملف المود ومعه مرفقات المعاينة (صورة/فيديو/صوت) حتى لا تتراكم
+      const prefix = `${target.folderName}-`
+      for (const asset of release.assets) {
+        const isMod = asset.name === `${target.folderName}.zip`
+        const isPreview =
+          asset.name.startsWith(`${prefix}cover.`) ||
+          asset.name.startsWith(`${prefix}video.`) ||
+          asset.name.startsWith(`${prefix}preview.`)
+        if (isMod || isPreview) await deleteAssetById(asset.id, token)
+      }
     }
     await putCatalog(release, remaining, token)
     return { success: true }
