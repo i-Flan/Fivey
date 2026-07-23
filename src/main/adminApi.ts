@@ -320,6 +320,34 @@ export async function adminUploadMedia(
   }
 }
 
+// روابط ديسكورد (cdn/media) تنتهي صلاحيتها خلال ساعات — نعيد استضافتها على
+// GitHub لتصير دائمة. يرجّع الرابط الجديد، أو الأصلي لو فشل التحميل.
+async function rehostIfExpiring(url: string, folderName: string, token: string): Promise<string> {
+  if (!/(cdn|media)\.discordapp\.(com|net)/i.test(url)) return url
+  try {
+    const res = await fetch(url)
+    if (!res.ok) return url
+    const buf = Buffer.from(await res.arrayBuffer())
+    const ct = res.headers.get('content-type') || 'image/png'
+    const ext = ct.includes('jpeg') ? '.jpg' : ct.includes('gif') ? '.gif' : ct.includes('webp') ? '.webp' : '.png'
+    const assetName = `${folderName}-cover${ext}`
+    const tmp = join(app.getPath('temp'), `${assetName}-${Date.now()}`)
+    writeFileSync(tmp, buf)
+    const release = await getOrCreateRelease(token)
+    const old = release.assets.find((a) => a.name === assetName)
+    if (old) await deleteAssetById(old.id, token)
+    await uploadAsset(release.id, assetName, tmp, ct, token)
+    try {
+      rmSync(tmp, { force: true })
+    } catch {
+      // ignore
+    }
+    return `https://github.com/${CONTENT_OWNER}/${CONTENT_REPO}/releases/download/${CONTENT_TAG}/${assetName}`
+  } catch {
+    return url
+  }
+}
+
 export async function adminEditMod(id: string, fields: Partial<CatalogEntry>, token: string): Promise<{ success: boolean; error?: string }> {
   try {
     const release = await getOrCreateRelease(token)
@@ -328,7 +356,9 @@ export async function adminEditMod(id: string, fields: Partial<CatalogEntry>, to
     if (!m) return { success: false, error: 'المود غير موجود' }
     if (fields.nameAr !== undefined) m.nameAr = fields.nameAr
     if (fields.descriptionAr !== undefined) m.descriptionAr = fields.descriptionAr
-    if (fields.preview !== undefined) m.preview = fields.preview || undefined
+    if (fields.preview !== undefined) {
+      m.preview = fields.preview ? await rehostIfExpiring(fields.preview, m.folderName, token) : undefined
+    }
     if (fields.soundPreview !== undefined) m.soundPreview = fields.soundPreview || undefined
     if (fields.videoPreview !== undefined) m.videoPreview = fields.videoPreview || undefined
     await putCatalog(release, mods, token)
